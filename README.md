@@ -227,6 +227,22 @@ Skills use standard YAML frontmatter (`name`, `description`, `license`, `compati
 
 ---
 
+## Inspiration
+
+This project was directly inspired by Armin Ronacher's post **[Skills vs Dynamic MCP Loadouts](https://lucumr.pocoo.org/2025/12/13/skills-vs-mcp/)** (December 2025).
+
+The core argument from that post: MCP servers are great, but eagerly loading their full tool definitions burns tokens, and routing calls through a CLI proxy like mcporter leaves the agent with no idea what tools exist. The sweet spot is a **skill file** — a compact, human-maintained summary that teaches the agent what a tool can do and how to invoke it, without injecting heavy tool schemas into the context.
+
+Key quote:
+
+> *"Skills are really just short summaries of which skills exist and in which file the agent can learn more about them. […] Crucially, skills do not actually load a tool definition into the context. The tools remain the same: bash and the other tools the agent already has. All it learns from the skill are tips and tricks for how to use these tools more effectively."*
+
+That is exactly what this repo does for Serena: each skill is a lightweight manual that the agent loads on demand via OpenCode's native `skill` tool, while Serena's actual MCP tools are called through mcporter as ordinary CLI invocations.
+
+The known limitation Armin identifies — that MCP servers change their APIs freely, which can silently invalidate skill files — applies here too. If Serena's tool signatures change, the skills in this repo will need updating. PRs welcome.
+
+---
+
 ## License
 
 MIT
