@@ -107,6 +107,7 @@ npx mcporter call serena.rename_symbol \
 
 ## Notes
 
+- **Requires an active project.** mcporter spawns a fresh Serena process per call — always call `activate_project` at the start of each call chain (see `serena-project` skill).
 - Always use `find_symbol` (see `serena-code-intelligence` skill) to confirm a symbol's name path before editing.
 - Prefer `mode=regex` with non-greedy wildcards (`.*?`) for multi-line replacements — it avoids quoting large blocks of code.
 - `rename_symbol` uses LSP rename, so it is safe across all files that import the symbol.

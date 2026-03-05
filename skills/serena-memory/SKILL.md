@@ -127,6 +127,7 @@ npx mcporter call serena.delete_memory memory_name=build/commands
 
 ## Notes
 
+- **Project-scoped memories require an active project.** mcporter spawns a fresh Serena process per call — always call `activate_project` at the start of each call chain if working with project memories (see `serena-project` skill). Global memories (`global/` prefix) do not require an active project.
 - Always check `list_memories` before writing to avoid overwriting important existing memories.
 - Read relevant memories at the start of a work session to load project context.
 - `global/` memories are shared across all projects — be careful about what you store there.

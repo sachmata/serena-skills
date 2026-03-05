@@ -86,6 +86,7 @@ npx mcporter call serena.find_referencing_symbols \
 
 ## Notes
 
+- **Requires an active project.** mcporter spawns a fresh Serena process per call — always call `activate_project` at the start of each call chain (see `serena-project` skill).
 - Always prefer this over raw grep or file reads when looking for specific symbols — it is faster and structurally aware.
 - Use `include_body=true` only when you need the full source; omit it to reduce output size.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.

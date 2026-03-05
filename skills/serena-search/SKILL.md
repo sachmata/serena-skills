@@ -96,6 +96,7 @@ npx mcporter call serena.search_for_pattern \
 
 ## Notes
 
+- **Requires an active project.** mcporter spawns a fresh Serena process per call — always call `activate_project` at the start of each call chain (see `serena-project` skill).
 - The pattern uses Python `re` syntax with `DOTALL` and `MULTILINE` flags — `.` matches newlines.
 - Avoid `.*` at the start or end of patterns; use it in the middle with non-greedy `.*?` for multi-line spans.
 - For finding specific named symbols (classes, functions), prefer `find_symbol` (see `serena-code-intelligence` skill) — it's faster and structurally aware.

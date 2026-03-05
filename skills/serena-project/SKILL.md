@@ -82,26 +82,47 @@ npx mcporter call serena.initial_instructions
 npx mcporter call serena.prepare_for_new_conversation
 ```
 
-## Recommended session startup sequence
+## mcporter process model — important
 
-When starting a new work session on a project:
+**mcporter spawns a fresh Serena process for every call.** No in-memory state (active project, modes, onboarding status) persists between separate `npx mcporter call` invocations.
+
+Practical consequences:
+
+- **Always call `activate_project` first** in every call chain — the active project is reset each time.
+- `onboarding` requires an active project; if you call it without activating first, it will fail.
+- Projects must be registered in `~/.serena/serena_config.yml` before they can be activated by name. Activate by full path the first time to register, then by name thereafter.
 
 ```bash
-# 1. Check what's currently active
-npx mcporter call serena.get_current_config
+# First time (registers the project path):
+npx mcporter call serena.activate_project project=/home/user/projects/my-app
 
-# 2. Activate the target project (if not already active)
+# Subsequent calls (activate by registered name):
+npx mcporter call serena.activate_project project=my-app
+```
+
+## Recommended session startup sequence
+
+Because mcporter is stateless between calls, repeat this at the start of every call chain:
+
+```bash
+# 1. Activate the target project (required every time — state does not persist)
 npx mcporter call serena.activate_project project=my-project
 
-# 3. Check if onboarding is needed
+# 2. Check if onboarding is needed (requires active project)
 npx mcporter call serena.check_onboarding_performed
 
-# 4. Run onboarding if needed (only once per conversation)
+# 3. Run onboarding if needed (only once per conversation)
 #    (skip if onboarding already performed)
 npx mcporter call serena.onboarding
 
-# 5. Set the appropriate mode for your task
+# 4. Set the appropriate mode for your task
 npx mcporter call serena.switch_modes modes='["editing"]'
+```
+
+To inspect current state after activation:
+
+```bash
+npx mcporter call serena.get_current_config
 ```
 
 ## Available modes
@@ -123,6 +144,8 @@ npx mcporter call serena.switch_modes modes='["editing"]'
 
 ## Notes
 
+- **mcporter spawns a fresh process per call** — active project, modes, and onboarding state are lost between invocations. Always call `activate_project` at the start of each call chain.
 - Always activate a project before using file, symbol, or search tools — they need an active project context.
-- `onboarding` should be called **at most once per conversation**.
+- `onboarding` requires an active project and should be called **at most once per conversation**.
+- Activate by full path the first time to register a project in `~/.serena/serena_config.yml`; activate by name on all subsequent calls.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
