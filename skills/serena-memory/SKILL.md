@@ -55,6 +55,8 @@ npx mcporter call serena.write_memory \
 
 ### Read a memory
 
+> The parameter is `memory_name`, not `name`.
+
 ```bash
 npx mcporter call serena.read_memory memory_name=build/commands
 npx mcporter call serena.read_memory memory_name=global/typescript/style-guide

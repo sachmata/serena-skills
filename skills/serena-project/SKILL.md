@@ -84,13 +84,15 @@ npx mcporter call serena.prepare_for_new_conversation
 
 ## mcporter process model — important
 
-**mcporter spawns a fresh Serena process for every call.** No in-memory state (active project, modes, onboarding status) persists between separate `npx mcporter call` invocations.
+**Without the keep-alive daemon**, mcporter spawns a fresh Serena process for every call and no in-memory state (active project, modes, onboarding status) persists between separate `npx mcporter call` invocations.
 
-Practical consequences:
+Practical consequences (no-daemon mode only):
 
 - **Always call `activate_project` first** in every call chain — the active project is reset each time.
 - `onboarding` requires an active project; if you call it without activating first, it will fail.
 - Projects must be registered in `~/.serena/serena_config.yml` before they can be activated by name. Activate by full path the first time to register, then by name thereafter.
+
+**With the keep-alive daemon running (Option A, recommended)**, state persists across all calls in a session — you only need to `activate_project` once and subsequent calls retain the active project, modes, and onboarding status.
 
 ```bash
 # First time (registers the project path):

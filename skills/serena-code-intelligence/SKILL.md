@@ -33,6 +33,8 @@ Serena uses a **name path** to identify symbols within a file:
 
 ### Get symbols overview of a file
 
+> **`relative_path` must be a file, not a directory.**
+
 ```bash
 # Flat overview (top-level symbols only)
 npx mcporter call serena.get_symbols_overview relative_path=src/index.ts

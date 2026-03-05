@@ -16,7 +16,7 @@ Provide instructions for using `search_for_pattern`, the Serena MCP server tool 
 
 | Tool | Purpose |
 |------|---------|
-| `search_for_pattern` | Search file contents using Python regex (DOTALL + MULTILINE flags enabled) |
+| `search_for_pattern` | Search file contents using Python regex (DOTALL flag enabled — `.` matches newlines) |
 
 ## How to call with mcporter
 
@@ -97,7 +97,7 @@ npx mcporter call serena.search_for_pattern \
 ## Notes
 
 - **Requires an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project.
-- The pattern uses Python `re` syntax with `DOTALL` and `MULTILINE` flags — `.` matches newlines.
+- The pattern uses Python `re` syntax with the `DOTALL` flag — `.` matches newlines. **`MULTILINE` is NOT enabled by default**, so `^` and `$` anchor to the start/end of the entire file content, not individual lines. Add `(?m)` to your pattern if you need line-level anchors (e.g., `(?m)^import`).
 - Avoid `.*` at the start or end of patterns; use it in the middle with non-greedy `.*?` for multi-line spans.
 - For finding specific named symbols (classes, functions), prefer `find_symbol` (see `serena-code-intelligence` skill) — it's faster and structurally aware.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.

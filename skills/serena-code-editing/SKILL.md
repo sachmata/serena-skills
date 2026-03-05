@@ -51,6 +51,13 @@ npx mcporter call serena.replace_content \
   needle='console\.log' \
   repl='logger.info' \
   allow_multiple_occurrences=true
+
+# Use backreferences in the replacement — syntax is $!1, $!2, etc. (NOT \1, \2)
+npx mcporter call serena.replace_content \
+  relative_path=src/config.ts \
+  mode=regex \
+  needle='(const \w+) = OLD' \
+  repl='$!1 = NEW'
 ```
 
 ### Replace an entire symbol body
@@ -112,4 +119,5 @@ npx mcporter call serena.rename_symbol \
 - Prefer `mode=regex` with non-greedy wildcards (`.*?`) for multi-line replacements — it avoids quoting large blocks of code.
 - `rename_symbol` uses LSP rename, so it is safe across all files that import the symbol.
 - `replace_symbol_body` does NOT include preceding docstrings/comments — those are preserved automatically.
+- `replace_symbol_body` appends a trailing newline after the replaced body. This is normal; verify with `read_file` if the exact output matters.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
