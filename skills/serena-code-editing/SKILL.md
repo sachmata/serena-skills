@@ -151,9 +151,12 @@ npx mcporter call serena.rename_symbol \
 - **No verification needed**: Symbol editing tools are reliable — you never need to verify the result if the tool returns without error. Similarly, regex replacements are safe because mismatches cause an error rather than a wrong edit.
 - **`replace_symbol_body`**: The body is the symbol's definition including its signature line. It does **not** include preceding docstrings, comments, or imports — those are preserved automatically.
 - **Inserting at file boundaries**: Use `insert_after_symbol` with the last top-level symbol to append at end of file; use `insert_before_symbol` with the first top-level symbol to prepend.
+- **Indentation**: `insert_after_symbol` and `insert_before_symbol` insert the `body` text verbatim — they do **not** auto-indent to match the surrounding context. Include appropriate leading whitespace in the `body` string (e.g. `body='  newMethod() { ... }'` for two-space indented code). Check the file's existing indentation style first.
+- **LSP indexing delay**: Newly created files (via `create_text_file`) may take 1–2 seconds to be indexed by the language server. If symbol-aware tools (`insert_after_symbol`, `rename_symbol`, etc.) fail on a just-created file, wait briefly and retry.
 
 ## Notes
 
 - Requires an active project in editing mode (`serena-project` skill).
+- Always use Serena's editing tools instead of the agent's built-in string replace or file rewrite — Serena validates edits and supports LSP-aware operations.
 - Always use `find_symbol` to confirm a symbol's `name_path` and `relative_path` before editing.
 - `rename_symbol` uses LSP rename — safe across all files that reference the symbol.

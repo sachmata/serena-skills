@@ -83,6 +83,21 @@ Multiple modes can be active simultaneously. Switch during a session with `switc
 - **Interactive mode**: Engage with the user throughout, asking for clarification when anything is unclear. Break complex tasks into smaller steps and explain thinking at each stage.
 - **Planning mode**: Read-only analysis. No edit tools are available.
 
+### Tool availability by mode
+
+Switching modes immediately changes which tools are available. Tools that require `editing` mode:
+
+| Tool                   | Requires `editing` |
+| ---------------------- | ------------------ |
+| `create_text_file`     | yes                |
+| `replace_content`      | yes                |
+| `replace_symbol_body`  | yes                |
+| `insert_after_symbol`  | yes                |
+| `insert_before_symbol` | yes                |
+| `rename_symbol`        | yes                |
+
+All read/search/navigation tools (`read_file`, `list_dir`, `find_file`, `search_for_pattern`, `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, etc.) remain available in `planning` mode.
+
 ## mcporter state persistence
 
 All Serena tools require an **active project**. Without the mcporter keep-alive daemon, each `npx mcporter call` spawns a fresh process and state is lost.
@@ -119,6 +134,12 @@ A context defines the environment Serena is operating in. It is **set at startup
 | `oaicompat-agent` | Like `agent` but uses OpenAI-compatible tool descriptions (use with local servers like Llama.cpp).                             |
 
 > **Single-project contexts (`ide`, `claude-code`):** If a project is provided at startup, the toolset is trimmed to only what that project needs. The `activate_project` tool is disabled because switching projects is irrelevant in this mode.
+
+## Prefer Serena tools over generic agent tools
+
+Once a project is activated, **always use Serena tools** for file reads, writes, search, and code editing instead of the agent's built-in equivalents. Serena tools operate relative to the project root, respect `.gitignore`, and — for code — provide LSP-backed structural intelligence rather than plain text matching. Edits are validated: mismatches return errors rather than silently producing wrong results.
+
+Fall back to generic agent tools only for operations Serena does not cover (e.g. downloading files, external APIs, or work outside the project directory).
 
 ## When to use
 

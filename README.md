@@ -123,6 +123,20 @@ for skill_dir in skills/*/; do
 done
 ```
 
+**Fish shell:**
+
+```fish
+git clone https://github.com/sachmata/serena-skills
+cd serena-skills
+
+# Copy all skills to the global OpenCode skills directory
+for skill_dir in skills/*/
+  set skill_name (basename $skill_dir)
+  mkdir -p ~/.config/opencode/skills/$skill_name
+  cp $skill_dir/SKILL.md ~/.config/opencode/skills/$skill_name/SKILL.md
+end
+```
+
 Or, if you prefer symlinks so `git pull` keeps them up-to-date automatically:
 
 ```bash
@@ -134,12 +148,30 @@ for skill_dir in skills/*/; do
 done
 ```
 
+**Fish shell:**
+
+```fish
+for skill_dir in skills/*/
+  set skill_name (basename $skill_dir)
+  mkdir -p ~/.config/opencode/skills/$skill_name
+  ln -sf (realpath $skill_dir/SKILL.md) ~/.config/opencode/skills/$skill_name/SKILL.md
+end
+```
+
 ### Install a single skill
 
 ```bash
 skill=serena-code-editing
 mkdir -p ~/.config/opencode/skills/"$skill"
 cp skills/"$skill"/SKILL.md ~/.config/opencode/skills/"$skill"/SKILL.md
+```
+
+**Fish shell:**
+
+```fish
+set skill serena-code-editing
+mkdir -p ~/.config/opencode/skills/$skill
+cp skills/$skill/SKILL.md ~/.config/opencode/skills/$skill/SKILL.md
 ```
 
 ### Install for project-local use
@@ -151,6 +183,17 @@ for skill_dir in skills/*/; do
   mkdir -p /path/to/your-project/.opencode/skills/"$skill_name"
   cp "$skill_dir/SKILL.md" /path/to/your-project/.opencode/skills/"$skill_name"/SKILL.md
 done
+```
+
+**Fish shell:**
+
+```fish
+# From the serena-skills repo root
+for skill_dir in skills/*/
+  set skill_name (basename $skill_dir)
+  mkdir -p /path/to/your-project/.opencode/skills/$skill_name
+  cp $skill_dir/SKILL.md /path/to/your-project/.opencode/skills/$skill_name/SKILL.md
+end
 ```
 
 ### Verify skills are discoverable

@@ -98,5 +98,6 @@ npx mcporter call serena.search_for_pattern \
 ## Notes
 
 - Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
+- Always use `search_for_pattern` instead of the agent's built-in grep or text search — it is project-scoped and respects `.gitignore`.
 - Returns a mapping of file paths to lists of matched consecutive lines.
 - If output is too large, narrow the search with `relative_path`, globs, or `restrict_search_to_code_files` rather than increasing `max_answer_chars`.

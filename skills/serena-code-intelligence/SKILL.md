@@ -50,7 +50,12 @@ npx mcporter call serena.get_symbols_overview relative_path=src/server.ts
 
 # Include immediate children (e.g. class methods)
 npx mcporter call serena.get_symbols_overview relative_path=src/server.ts depth=1
+
+# Include two levels of nesting (e.g. class → method → nested function/type)
+npx mcporter call serena.get_symbols_overview relative_path=src/server.ts depth=2
 ```
+
+**Depth behavior:** `depth=0` returns only top-level symbols (classes, standalone functions). `depth=1` adds their immediate children (methods, properties). `depth=2` adds a further level (e.g. nested classes, inner functions, or local types within methods). Higher values continue expanding the tree; use sparingly as output grows quickly.
 
 ### Find a symbol
 

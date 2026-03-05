@@ -19,6 +19,8 @@ metadata:
 
 ## Strategy: when to use file-level vs symbolic tools
 
+Once a project is activated, always use Serena's file tools instead of the agent's built-in file read/write/list — they operate relative to the project root and respect `.gitignore`.
+
 Prefer symbolic tools (`get_symbols_overview`, `find_symbol`) when you know which code symbols you need — they are faster and structurally aware. Use file I/O tools when:
 
 - You need the full raw text of a file (config, prose, data files)
@@ -89,4 +91,5 @@ All tools accept an optional `max_answer_chars` parameter (default `-1` = server
 
 - Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
 - `create_text_file` **overwrites** if the file exists — use with care.
+- `create_text_file` requires the agent to be in **editing mode** — it is disabled in `planning` mode. Switch modes first if needed (see `serena-project` skill).
 - Use `relative_path` to restrict `list_dir` and `find_file` to subdirectories for faster results.
