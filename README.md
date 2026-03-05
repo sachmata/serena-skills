@@ -25,16 +25,12 @@ Serena requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
 ```bash
 # Install uv if you don't have it
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Clone Serena
-git clone https://github.com/oraios/serena ~/.serena
-cd ~/.serena && uv sync
 ```
 
-Alternatively, Serena can be run directly via `uvx` without cloning:
+Serena is run directly via `uvx` — no cloning required:
 
 ```bash
-uvx --from serena serena
+uvx --from git+https://github.com/oraios/serena serena start-mcp-server
 ```
 
 ### Register Serena with mcporter
@@ -47,7 +43,7 @@ uvx --from serena serena
 # Creates/updates config/mcporter.json in the current directory,
 # or ~/.mcporter/mcporter.json if you want it globally
 npx mcporter config add serena \
-  --stdio "uv run --directory ~/.serena serena" \
+  --stdio "uvx --from git+https://github.com/oraios/serena serena start-mcp-server" \
   --scope home
 ```
 
@@ -57,22 +53,8 @@ npx mcporter config add serena \
 {
   "mcpServers": {
     "serena": {
-      "command": "uv",
-      "args": ["run", "--directory", "/home/YOUR_USER/.serena", "serena"],
-      "description": "Serena — LSP-backed coding assistant MCP server"
-    }
-  }
-}
-```
-
-Replace `/home/YOUR_USER/.serena` with the actual path where you cloned Serena, or use `uvx`:
-
-```jsonc
-{
-  "mcpServers": {
-    "serena": {
       "command": "uvx",
-      "args": ["--from", "serena", "serena"],
+      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server"],
       "description": "Serena — LSP-backed coding assistant MCP server"
     }
   }
@@ -96,7 +78,7 @@ If you use OpenCode and want Serena available as a native MCP server (without ro
   "mcp": {
     "serena": {
       "type": "local",
-      "command": ["uv", "run", "--directory", "/home/YOUR_USER/.serena", "serena"],
+      "command": ["uvx", "--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server"],
       "enabled": true
     }
   }
@@ -123,7 +105,7 @@ Skills are Markdown files that OpenCode loads on-demand to give the agent reusab
 Run this one-liner from any directory — it clones the repo and symlinks (or copies) the skills into your global OpenCode skills directory:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/serena-skills ~/Projects/serena-skills
+git clone https://github.com/sachmata/serena-skills ~/Projects/serena-skills
 
 # Copy all skills to the global OpenCode skills directory
 for skill_dir in ~/Projects/serena-skills/skills/*/; do
@@ -178,17 +160,55 @@ Or ask the agent: `list all available skills`. You should see all seven `serena-
 
 ## 3. Use the skills
 
-Once installed, the agent loads skills on-demand. You can trigger a skill explicitly:
+Skills are loaded on-demand: OpenCode exposes each skill's name and description to the agent, and the agent fetches the full `SKILL.md` automatically when it determines a skill is relevant to the current task. No user intervention is needed.
+
+### Typical session workflow
+
+**Step 1 — Activate the project (`serena-project`)**
+
+Start every session by activating your project. On first use, Serena creates a `.serena/project.yml` configuration file in the project root.
 
 ```
-Use the serena-project skill to set up my session.
+Load the serena-project skill, then activate the project /path/to/my-project
 ```
 
-Or the agent will pick the right skill automatically based on context. To load a specific skill from within a session paste the install prompt from [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) to prime the agent with all skills at once.
+**Step 2 — Onboarding and memories (`serena-memory`)**
 
-### Quick-start session prompt
+On first activation, if no memories exist yet, Serena automatically runs an onboarding pass: it reads key files (structure, build system, tests) and stores the findings as Markdown files in `.serena/memories/`. On subsequent activations it skips onboarding and reads the existing memories instead.
 
-See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that instructs the agent to load all Serena skills and begin a properly initialized work session.
+After onboarding completes, start a **new conversation** — the context window is likely full after the initial read. Then prime the agent with project knowledge:
+
+```
+Load the serena-memory skill. Summarise what you know about this project from memory.
+```
+
+Ask the agent to keep memories current as the project evolves:
+
+```
+Update the memory "modules/backend" to reflect the new database schema.
+```
+
+**Step 3 — Coding tasks**
+
+Just describe what you want — the agent reads the skill descriptions, decides which skills are relevant, and loads them automatically:
+
+```
+Rename the UserService class to AccountService and update all call sites.
+```
+
+The remaining skills cover the agent's full toolkit and are loaded autonomously as needed:
+
+| Skill | When the agent uses it |
+|-------|------------------------|
+| `serena-file-io` | Reading, writing, or listing files |
+| `serena-code-intelligence` | Looking up symbol definitions, references, or class hierarchies |
+| `serena-code-editing` | Editing code by symbol name or regex pattern |
+| `serena-search` | Full-text or regex search across the codebase |
+| `serena-shell` | Running build, test, or lint commands |
+
+### Quick-start install prompt
+
+See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that you can give to any agent with shell access to clone this repo and install all skills automatically.
 
 ---
 
@@ -197,7 +217,7 @@ See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that in
 ```
 serena-skills/
 ├── README.md                          ← you are here
-├── INSTALL_PROMPT.md                  ← copy-paste agent primer
+├── INSTALL_PROMPT.md                  ← paste into an agent to auto-install skills
 └── skills/
     ├── serena-project/
     │   └── SKILL.md                   ← project lifecycle & modes
