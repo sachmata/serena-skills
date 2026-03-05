@@ -321,6 +321,44 @@ See [`SKILL_AUTHORING.md`](SKILL_AUTHORING.md) for a concise reference on writin
 
 ---
 
+## Generating a tool reference for skill development
+
+When writing or updating skills, it helps to have Serena's current tool definitions as a reference. There are two ways to get them.
+
+### Option A: mcporter (quick look)
+
+If you already have mcporter configured (see above), list all tool definitions directly:
+
+```bash
+npx mcporter list serena
+```
+
+This prints every tool's name, description, and parameters to the terminal — useful for a quick check while editing a skill.
+
+### Option B: OpenAPI spec via mcpo (full machine-readable reference)
+
+For a complete, structured reference you can generate a `serena_openapi.json` file by exposing the MCP server as a REST endpoint with [mcpo](https://github.com/nicholasgasior/mcpo) and fetching its OpenAPI spec.
+
+**1. Start Serena behind mcpo:**
+
+```bash
+uvx mcpo --port 8088 -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server
+```
+
+This wraps the Serena MCP server in an HTTP server on port 8088.
+
+**2. Fetch the OpenAPI spec:**
+
+```bash
+curl http://0.0.0.0:8088/openapi.json -o serena_openapi.json
+```
+
+The resulting `serena_openapi.json` contains every tool's name, description, and parameter schema. Use it as the source of truth when authoring new skills or updating existing ones after Serena changes its API.
+
+> **Note:** `serena_openapi.json` is a development aid — it is not checked into this repo. Regenerate it whenever you need to verify tool signatures against the latest Serena version.
+
+---
+
 ## License
 
 MIT
