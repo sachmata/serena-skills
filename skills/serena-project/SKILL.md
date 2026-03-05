@@ -1,6 +1,6 @@
 ---
 name: serena-project
-description: Manage Serena MCP server project lifecycle and agent configuration. Use for activating projects, performing onboarding, switching agent modes, getting current config, and preparing for new conversations.
+description: Manage Serena MCP server project lifecycle and agent configuration. Use for activating projects, performing onboarding, switching agent modes (editing/planning/interactive/one-shot/no-memories/etc.), getting current config, and preparing for new conversations. Contexts (desktop-app, ide, claude-code, agent, codex) are set at startup and determine the available toolset.
 license: MIT
 compatibility: opencode
 metadata:
@@ -189,12 +189,49 @@ npx mcporter call serena.get_current_config
 
 ## Available modes
 
+Multiple modes can be active simultaneously. Switch them during a session with `switch_modes`; they take effect immediately.
+
 | Mode | When to use |
 |------|------------|
 | `editing` | Making code changes — enables write tools |
 | `planning` | Analysis, exploration, planning without edits |
 | `interactive` | Back-and-forth with the user, asks clarifying questions |
-| `one-shot` | Complete a task autonomously then stop |
+| `one-shot` | Complete a task autonomously then stop (often combined with `planning`) |
+| `no-onboarding` | Skip onboarding but keep memory tools (use when memories were created externally) |
+| `onboarding` | Focus on project onboarding process |
+| `no-memories` | Disable all memory tools and onboarding tools |
+
+> **Default:** Serena activates `interactive` + `editing` by default. When you pass `--mode` flags at startup, **only** the explicitly listed modes are active — include `interactive` and `editing` if you want them to stay on.
+>
+> **Base vs default modes:** Modes set as *base modes* in config always remain active regardless of CLI overrides. *Default modes* can be overridden from the command line or via `switch_modes`.
+
+### Switch modes during a session
+
+```bash
+# Add no-memories to current defaults (must re-specify all desired modes)
+npx mcporter call serena.switch_modes modes='["editing", "interactive", "no-memories"]'
+
+# Switch entirely to planning + one-shot (e.g. for a report)
+npx mcporter call serena.switch_modes modes='["planning", "one-shot"]'
+
+# Return to standard interactive editing
+npx mcporter call serena.switch_modes modes='["editing", "interactive"]'
+```
+
+## Contexts
+
+A context defines the environment Serena is operating in. It is **set at startup** (CLI `--context <name>`) and **cannot be changed** during a session. It determines the initial system prompt and the available toolset.
+
+| Context | Description |
+|---------|-------------|
+| `desktop-app` | **Default.** Full toolset for desktop apps like Claude Desktop. |
+| `ide` | For IDE assistants (VS Code / Cursor / Cline). Assumes the IDE already handles basic file I/O and shell — single-project mode. |
+| `claude-code` | For Claude Code. Disables tools duplicating Claude Code's built-in capabilities — single-project mode. |
+| `codex` | Optimized for OpenAI Codex. |
+| `agent` | For autonomous agents (e.g. Agno). |
+| `oaicompat-agent` | Like `agent` but uses OpenAI-compatible tool descriptions (use with local servers like Llama.cpp). |
+
+> **Single-project contexts (`ide`, `claude-code`):** If a project is provided at startup, the toolset is trimmed to only what that project needs. The `activate_project` tool is disabled because switching projects is irrelevant in this mode.
 
 ## When to use me
 

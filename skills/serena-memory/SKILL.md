@@ -133,4 +133,5 @@ npx mcporter call serena.delete_memory memory_name=build/commands
 - Always check `list_memories` before writing to avoid overwriting important existing memories.
 - Read relevant memories at the start of a work session to load project context.
 - `global/` memories are shared across all projects — be careful about what you store there.
+- **Memory tools are disabled in `no-memories` mode.** If memory tools are missing from `get_current_config`, check whether Serena was started with the `no-memories` mode active.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
