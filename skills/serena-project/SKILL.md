@@ -100,24 +100,84 @@ npx mcporter call serena.activate_project project=/home/user/projects/my-app
 npx mcporter call serena.activate_project project=my-app
 ```
 
-## Recommended session startup sequence
+### Option A — keep-alive daemon (recommended)
 
-Because mcporter is stateless between calls, repeat this at the start of every call chain:
+mcporter supports a **keep-alive daemon** that holds the Serena process warm between calls. With this enabled, project activation and other state persist across separate `mcporter call` invocations.
+
+Add `"lifecycle": "keep-alive"` to your Serena entry in `~/.mcporter/mcporter.json`:
+
+```json
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx --from git+https://github.com/oraios/serena serena start-mcp-server",
+      "lifecycle": "keep-alive"
+    }
+  },
+  "imports": []
+}
+```
+
+> **Important:** The `command` must be the full command as a **single string** — do not split it into `command` + `args`. The `"imports": []` field is also required.
+
+Then start the daemon (stop first if already running to pick up config changes):
 
 ```bash
-# 1. Activate the target project (required every time — state does not persist)
+npx mcporter daemon stop 2>/dev/null
+npx mcporter daemon start
+
+# Check status
+npx mcporter daemon status
+
+# Stop when done
+npx mcporter daemon stop
+```
+
+With the daemon running, activate once and all subsequent calls reuse the same process:
+
+```bash
+npx mcporter call serena.activate_project project=my-project
+# State persists — onboarding, modes, and active project are all retained
+npx mcporter call serena.check_onboarding_performed
+```
+
+Alternatively, set the env var without editing config:
+
+```bash
+MCPORTER_KEEPALIVE=serena npx mcporter daemon start
+```
+
+### Option B — shell chaining (no daemon)
+
+> **Warning:** `&&`-chaining `npx mcporter call` commands does **not** persist state. Each invocation spawns a completely fresh Serena process, so the project activated in call 1 is gone by call 2. The following example will fail at `check_onboarding_performed` because the new process has no active project:
+
+```bash
+# ❌ This does NOT work — each call is a fresh process
+npx mcporter call serena.activate_project project=my-project && \
+npx mcporter call serena.check_onboarding_performed
+```
+
+For any multi-step workflow that depends on activation state, use the **keep-alive daemon (Option A)**. Shell chaining is only useful for fire-and-forget single-tool calls where no prior state is needed.
+
+## Recommended session startup sequence
+
+With the keep-alive daemon running (Option A), activate once per session:
+
+```bash
+# 1. Activate the target project
 npx mcporter call serena.activate_project project=my-project
 
 # 2. Check if onboarding is needed (requires active project)
 npx mcporter call serena.check_onboarding_performed
 
 # 3. Run onboarding if needed (only once per conversation)
-#    (skip if onboarding already performed)
 npx mcporter call serena.onboarding
 
 # 4. Set the appropriate mode for your task
 npx mcporter call serena.switch_modes modes='["editing"]'
 ```
+
+Without the daemon, state-dependent sequences like the above cannot be done with separate `mcporter call` invocations — use the daemon.
 
 To inspect current state after activation:
 
@@ -144,7 +204,7 @@ npx mcporter call serena.get_current_config
 
 ## Notes
 
-- **mcporter spawns a fresh process per call** — active project, modes, and onboarding state are lost between invocations. Always call `activate_project` at the start of each call chain.
+- **mcporter spawns a fresh process per call** — active project, modes, and onboarding state are lost between invocations unless the keep-alive daemon is running. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry (see Option A above for the correct config format), then run `npx mcporter daemon start`. `&&`-chaining separate `mcporter call` commands does NOT preserve state between them.
 - Always activate a project before using file, symbol, or search tools — they need an active project context.
 - `onboarding` requires an active project and should be called **at most once per conversation**.
 - Activate by full path the first time to register a project in `~/.serena/serena_config.yml`; activate by name on all subsequent calls.

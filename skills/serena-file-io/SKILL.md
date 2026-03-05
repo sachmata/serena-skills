@@ -73,7 +73,7 @@ npx mcporter call serena.find_file file_mask="tsconfig*.json" relative_path=.
 
 ## Notes
 
-- **Requires an active project.** mcporter spawns a fresh Serena process per call — always call `activate_project` at the start of each call chain (see `serena-project` skill).
+- **Requires an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project.
 - `read_file` line indices are **0-based**.
 - `create_text_file` **overwrites** the target file if it already exists — use with care.
 - Prefer symbolic tools (`serena-code-intelligence`, `serena-code-editing` skills) when you already know the symbol name; they are faster and more precise than reading raw files.

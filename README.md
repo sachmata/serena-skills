@@ -37,28 +37,35 @@ uvx --from git+https://github.com/oraios/serena serena start-mcp-server
 
 [mcporter](https://github.com/steipete/mcporter) is a CLI toolkit for calling MCP servers. It auto-discovers servers configured in Cursor, Claude Desktop, OpenCode, and VS Code, but you can also register Serena explicitly.
 
-**Option A — add to your mcporter config (recommended):**
+Edit `~/.mcporter/mcporter.json` directly (create the file if it doesn't exist):
 
-```bash
-# Creates/updates config/mcporter.json in the current directory,
-# or ~/.mcporter/mcporter.json if you want it globally
-npx mcporter config add serena \
-  --stdio "uvx --from git+https://github.com/oraios/serena serena start-mcp-server" \
-  --scope home
-```
-
-**Option B — edit `~/.mcporter/mcporter.json` directly:**
-
-```jsonc
+```json
 {
   "mcpServers": {
     "serena": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server"],
-      "description": "Serena — LSP-backed coding assistant MCP server"
+      "command": "uvx --from git+https://github.com/oraios/serena serena start-mcp-server",
+      "lifecycle": "keep-alive"
     }
-  }
+  },
+  "imports": []
 }
+```
+
+> **Important:** The `command` must be the full command as a single string. The `"imports": []` field is required. Do not split the command into `command` + `args`.
+
+**Start the keep-alive daemon:**
+
+```bash
+npx mcporter daemon start
+
+# Confirm it is running
+npx mcporter daemon status
+```
+
+The daemon keeps the Serena process alive between calls so that project activation and other state persists across separate `npx mcporter call` invocations. Stop it when you're done for the day:
+
+```bash
+npx mcporter daemon stop
 ```
 
 **Verify connectivity:**

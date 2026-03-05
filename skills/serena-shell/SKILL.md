@@ -77,7 +77,7 @@ npx mcporter call serena.execute_shell_command command='./scripts/generate.sh'
 
 ## Notes
 
-- **Requires an active project.** mcporter spawns a fresh Serena process per call — always call `activate_project` at the start of each call chain (see `serena-project` skill).
+- **Requires an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project.
 - **Never execute unsafe or destructive commands** (e.g., `rm -rf /`, `dd`, format commands).
 - Do not use this tool to start long-running servers or processes that require interactive input.
 - If Serena has a memory with suggested commands for the project, read that first (`serena-memory` skill).

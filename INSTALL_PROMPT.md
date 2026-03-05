@@ -14,25 +14,39 @@ Please set up Serena and serena-skills by running the following steps in a shell
 2. Verify uvx works:
    uvx --version
 
-3. Register Serena as a global mcporter MCP server:
-   npx mcporter config add serena \
-     --stdio "uvx --from git+https://github.com/oraios/serena serena start-mcp-server" \
-     --scope home
+3. Register Serena with the keep-alive daemon in ~/.mcporter/mcporter.json:
+   mkdir -p ~/.mcporter
+   cat > ~/.mcporter/mcporter.json << 'EOF'
+   {
+     "mcpServers": {
+       "serena": {
+         "command": "uvx --from git+https://github.com/oraios/serena serena start-mcp-server",
+         "lifecycle": "keep-alive"
+       }
+     },
+     "imports": []
+   }
+   EOF
 
-4. Verify Serena is reachable (should list ~25 tools):
+4. Start the keep-alive daemon (keeps Serena's process alive between calls):
+   npx mcporter daemon stop 2>/dev/null
+   npx mcporter daemon start
+   npx mcporter daemon status
+
+5. Verify Serena is reachable (should list ~25 tools):
    npx mcporter list serena
 
-5. Clone the serena-skills repo (skip if already present):
+6. Clone the serena-skills repo (skip if already present):
    git clone https://github.com/sachmata/serena-skills ~/serena-skills
 
-6. Copy every skill into the global OpenCode skills directory:
+7. Copy every skill into the global OpenCode skills directory:
    for skill_dir in ~/serena-skills/skills/*/; do
      skill_name=$(basename "$skill_dir")
      mkdir -p ~/.config/opencode/skills/"$skill_name"
      cp "$skill_dir/SKILL.md" ~/.config/opencode/skills/"$skill_name"/SKILL.md
    done
 
-7. Verify installation by listing the installed skill directories:
+8. Verify installation by listing the installed skill directories:
    ls ~/.config/opencode/skills/
 
 The expected output is seven directories:
