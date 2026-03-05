@@ -1,6 +1,6 @@
 ---
 name: serena-memory
-description: Manage persistent project and global memories using Serena MCP server. Use to write, read, list, edit, rename, or delete memories that persist context across conversations, such as project conventions, suggested commands, architecture notes, and style guides.
+description: Manages persistent project and global memories via Serena MCP server. Use to write, read, list, edit, rename, or delete cross-session memories (project conventions, suggested commands, architecture notes, style guides). Memories are Markdown files organized by topic with "/" separators. Use "global/" prefix for cross-project memories.
 license: MIT
 compatibility: opencode
 metadata:
@@ -8,33 +8,37 @@ metadata:
   category: memory
 ---
 
-## What I do
+## Tools
 
-Provide instructions for using Serena MCP server memory tools. Memories persist across conversations and can be scoped globally (prefix `global/`) or per-project. They are stored as Markdown files organized by topic.
-
-## Tools in this category
-
-| Tool | Purpose |
-|------|---------|
-| `write_memory` | Create or overwrite a memory |
-| `read_memory` | Read a memory's content |
-| `list_memories` | List all available memories, optionally filtered by topic |
-| `edit_memory` | Replace content in a memory via literal or regex |
-| `rename_memory` | Rename or move a memory (use `/` for topic organization) |
-| `delete_memory` | Delete a memory (only when explicitly requested) |
+| Tool            | Purpose                                                                      |
+| --------------- | ---------------------------------------------------------------------------- |
+| `write_memory`  | Create or overwrite a memory (Markdown format)                               |
+| `read_memory`   | Read a memory's content — only read if likely relevant to the current task   |
+| `list_memories` | List all memories, optionally filtered by topic                              |
+| `edit_memory`   | Replace content in a memory via literal string or regex (DOTALL + MULTILINE) |
+| `rename_memory` | Rename or move a memory (use `/` for topic organization)                     |
+| `delete_memory` | Delete a memory — only when explicitly instructed by the user                |
 
 ## Memory naming conventions
 
-- Use `/` as a separator to organize into topics: `auth/login/logic`, `build/commands`
-- Prefix with `global/` for memories shared across all projects: `global/typescript/style-guide`
-- Names should be descriptive and lowercase with hyphens
+- Use `/` to organize into topics: `auth/login/logic`, `build/commands`, `modules/backend`
+- Prefix with `global/` for cross-project memories: `global/typescript/style-guide`, `global/java/style_guide`
+- Names should be descriptive, lowercase with hyphens
+- The `global/` prefix should only be used when explicitly instructed
+
+## Session workflow
+
+1. After project activation and onboarding, call `list_memories` to see what's available
+2. Read relevant memories based on their names — infer relevance from the name
+3. Keep memories current as the project evolves (use `edit_memory` for partial updates, `write_memory` for full rewrites)
+
+Onboarding automatically creates initial memories on first project activation. On subsequent activations, existing memories are read instead of redoing onboarding.
 
 ## How to call with mcporter
 
 ### Write a memory
 
 ```bash
-# Save project build commands
 npx mcporter call serena.write_memory \
   memory_name=build/commands \
   content='## Build Commands
@@ -43,29 +47,25 @@ npx mcporter call serena.write_memory \
 - Lint: `npm run lint`
 '
 
-# Save a global style guide
+# Global memory (shared across all projects)
 npx mcporter call serena.write_memory \
   memory_name=global/typescript/style-guide \
   content='## TypeScript Style
 - Use strict mode
 - Prefer interfaces over type aliases for object shapes
-- Always type function return values explicitly
 '
 ```
 
 ### Read a memory
 
-> The parameter is `memory_name`, not `name`.
-
 ```bash
 npx mcporter call serena.read_memory memory_name=build/commands
-npx mcporter call serena.read_memory memory_name=global/typescript/style-guide
 ```
 
 ### List memories
 
 ```bash
-# List all memories
+# List all
 npx mcporter call serena.list_memories
 
 # Filter by topic
@@ -83,7 +83,7 @@ npx mcporter call serena.edit_memory \
   needle='npm test' \
   repl='npm run test:ci'
 
-# Regex replacement
+# Regex replacement (DOTALL + MULTILINE enabled)
 npx mcporter call serena.edit_memory \
   memory_name=build/commands \
   mode=regex \
@@ -99,39 +99,40 @@ npx mcporter call serena.edit_memory \
   allow_multiple_occurrences=true
 ```
 
-### Rename or move a memory
+### Rename / move a memory
 
 ```bash
-# Move to a different topic
-npx mcporter call serena.rename_memory \
-  old_name=commands \
-  new_name=build/commands
-
-# Rename within same topic
-npx mcporter call serena.rename_memory \
-  old_name=build/commands \
-  new_name=build/scripts
+npx mcporter call serena.rename_memory old_name=commands new_name=build/commands
 ```
 
 ### Delete a memory
 
 ```bash
-# Only delete when explicitly instructed
+# Only delete when explicitly instructed by the user
 npx mcporter call serena.delete_memory memory_name=build/commands
 ```
 
-## When to use me
+## Parameter reference
 
-- You want to persist project conventions, build commands, or architecture decisions across sessions.
-- You need to read previously stored context before starting work on a project.
-- You want to maintain a global style guide or coding standards across all projects.
-- You need to update or reorganize existing memories as the project evolves.
+| Tool            | Parameter                    | Required | Default        | Notes                                                      |
+| --------------- | ---------------------------- | -------- | -------------- | ---------------------------------------------------------- |
+| `write_memory`  | `memory_name`                | yes      | —              | Use `/` for topics, `global/` for cross-project            |
+|                 | `content`                    | yes      | —              | UTF-8 Markdown content                                     |
+|                 | `max_chars`                  | no       | config default | Only change if instructed                                  |
+| `read_memory`   | `memory_name`                | yes      | —              |                                                            |
+| `list_memories` | `topic`                      | no       | `""`           | Filter by topic prefix                                     |
+| `edit_memory`   | `memory_name`                | yes      | —              |                                                            |
+|                 | `needle`                     | yes      | —              | Literal string or regex pattern                            |
+|                 | `repl`                       | yes      | —              | Replacement string (verbatim)                              |
+|                 | `mode`                       | yes      | —              | `"literal"` or `"regex"` (Python `re`, DOTALL + MULTILINE) |
+|                 | `allow_multiple_occurrences` | no       | `false`        |                                                            |
+| `rename_memory` | `old_name`                   | yes      | —              |                                                            |
+|                 | `new_name`                   | yes      | —              |                                                            |
+| `delete_memory` | `memory_name`                | yes      | —              | Only call if user explicitly requests                      |
 
 ## Notes
 
-- **Project-scoped memories require an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project. Global memories (`global/` prefix) do not require an active project.
-- Always check `list_memories` before writing to avoid overwriting important existing memories.
-- Read relevant memories at the start of a work session to load project context.
-- `global/` memories are shared across all projects — be careful about what you store there.
-- **Memory tools are disabled in `no-memories` mode.** If memory tools are missing from `get_current_config`, check whether Serena was started with the `no-memories` mode active.
-- Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
+- Project-scoped memories require an active project (`serena-project` skill). Global memories (`global/` prefix) do not.
+- Check `list_memories` before writing to avoid overwriting important existing memories.
+- Memory tools are **disabled in `no-memories` mode**. If memory tools are missing from `get_current_config`, check whether Serena was started with `no-memories` mode active.
+- `edit_memory` regex mode uses both DOTALL and MULTILINE flags — `.` matches newlines, `^`/`$` match line boundaries.

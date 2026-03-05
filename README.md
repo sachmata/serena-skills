@@ -1,6 +1,6 @@
 # serena-skills
 
-OpenCode agent skills for [Serena MCP server](https://github.com/oraios/serena) — covering every tool category with ready-to-run [mcporter](https://github.com/steipete/mcporter) CLI examples.
+OpenCode agent skills for [Serena MCP server](https://github.com/oraios/serena) — covering every tool category with on-demand instructions and ready-to-run examples.
 
 ## Skills
 
@@ -138,8 +138,8 @@ done
 
 ```bash
 skill=serena-code-editing
-mkdir -p ~/.config/opencode/skills/$skill
-cp skills/$skill/SKILL.md ~/.config/opencode/skills/$skill/SKILL.md
+mkdir -p ~/.config/opencode/skills/"$skill"
+cp skills/"$skill"/SKILL.md ~/.config/opencode/skills/"$skill"/SKILL.md
 ```
 
 ### Install for project-local use
@@ -186,7 +186,7 @@ On first activation, if no memories exist yet, Serena automatically runs an onbo
 After onboarding completes, start a **new conversation** — the context window is likely full after the initial read. Then prime the agent with project knowledge:
 
 ```
-Load the serena-memory skill. Summarise what you know about this project from memory.
+Load the serena-memory skill. Summarize what you know about this project from memory.
 ```
 
 Ask the agent to keep memories current as the project evolves:
@@ -225,6 +225,8 @@ See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that yo
 serena-skills/
 ├── README.md                          ← you are here
 ├── INSTALL_PROMPT.md                  ← paste into an agent to auto-install skills
+├── SKILL_AUTHORING.md                 ← reference for writing and maintaining skills
+├── LICENSE
 └── skills/
     ├── serena-project/
     │   └── SKILL.md                   ← project lifecycle & modes
@@ -250,7 +252,7 @@ serena-skills/
 - **Claude Code / Claude Desktop** — place under `.claude/skills/` or `~/.claude/skills/`
 - **Agents-compatible hosts** — place under `.agents/skills/` or `~/.agents/skills/`
 
-Skills use standard YAML frontmatter (`name`, `description`, `license`, `compatibility`, `metadata`) and plain Markdown bodies. They are compatible with any agent host that supports the OpenCode skill format.
+Skills use YAML frontmatter with `name` and `description` (required by the skill format) plus optional `license`, `compatibility`, and `metadata` fields, and plain Markdown bodies. They are compatible with any agent host that supports the OpenCode skill format.
 
 ---
 
@@ -267,6 +269,12 @@ Key quote:
 That is exactly what this repo does for Serena: each skill is a lightweight manual that the agent loads on demand via OpenCode's native `skill` tool, while Serena's actual MCP tools are called through mcporter as ordinary CLI invocations.
 
 The known limitation Armin identifies — that MCP servers change their APIs freely, which can silently invalidate skill files — applies here too. If Serena's tool signatures change, the skills in this repo will need updating. PRs welcome.
+
+---
+
+## Skill authoring
+
+See [`SKILL_AUTHORING.md`](SKILL_AUTHORING.md) for a concise reference on writing and maintaining skills — structure, frontmatter fields, common patterns, and anti-patterns.
 
 ---
 

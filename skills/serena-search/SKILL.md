@@ -1,6 +1,6 @@
 ---
 name: serena-search
-description: Search file contents using Serena MCP server pattern search. Use when you need to find arbitrary regex patterns across the codebase, optionally filtered by file glob, directory, and with surrounding context lines.
+description: Searches file contents using Serena MCP server regex pattern search with glob filtering. Use for full-text regex search across the codebase (including non-code files like YAML, HTML, JSON), with directory restriction, file glob filters, and context lines. Prefer find_symbol for known code symbol names.
 license: MIT
 compatibility: opencode
 metadata:
@@ -8,96 +8,95 @@ metadata:
   category: search
 ---
 
-## What I do
-
-Provide instructions for using `search_for_pattern`, the Serena MCP server tool for flexible full-text regex search across the codebase. Supports file glob filters, directory restriction, context lines, and code-only mode.
-
 ## Tool
 
-| Tool | Purpose |
-|------|---------|
-| `search_for_pattern` | Search file contents using Python regex (DOTALL flag enabled — `.` matches newlines) |
+| Tool                 | Purpose                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `search_for_pattern` | Regex search across project files (Python `re` with DOTALL — `.` matches newlines) |
+
+## When to use vs symbolic tools
+
+- **Use `search_for_pattern`** for exploratory searches, non-code files, or when you don't know exact symbol names
+- **Use `find_symbol`** (see `serena-code-intelligence` skill) when you know the symbol name — it's faster and structurally aware
+- **Use `search_for_pattern` → then `find_symbol`**: First find candidates by pattern, then use symbolic tools for precise navigation
+
+## Pattern matching behavior
+
+- Compiled with **DOTALL** flag: `.` matches all characters including newlines
+- **MULTILINE is not enabled** by default — `^` and `$` anchor to start/end of entire file content. Add `(?m)` inline flag for line-level anchors (e.g., `(?m)^import`)
+- Never put `.*` at the beginning or end of a pattern (it's redundant with DOTALL). Use it **in the middle** with non-greedy `.*?` for multi-line spans
+- If a pattern matches multiple lines, all those lines are included in the match
+- Use non-greedy quantifiers (`.*?`) to avoid matching too much content
+
+## File selection logic
+
+Combine these parameters to target searches precisely:
+
+| Parameter                       | Effect                                                                |
+| ------------------------------- | --------------------------------------------------------------------- |
+| `relative_path`                 | Restrict to a file or directory subtree                               |
+| `paths_include_glob`            | Only search files matching this glob (e.g. `"*.ts"`, `"src/**/*.py"`) |
+| `paths_exclude_glob`            | Exclude files matching this glob; takes precedence over include       |
+| `restrict_search_to_code_files` | Only search files with LSP-indexed symbols (skip HTML, YAML, etc.)    |
+
+Globs match against relative file paths from the project root. Supports `*`, `?`, `[seq]`, `**`, and brace expansion `{a,b,c}`.
 
 ## How to call with mcporter
 
-### Basic search
-
 ```bash
-# Find all files containing "TODO" comments
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='TODO'
+# Basic search
+npx mcporter call serena.search_for_pattern substring_pattern='TODO'
 
-# Case-sensitive class name search
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='class\s+MyClass'
-```
-
-### Search with context lines
-
-```bash
-# Show 2 lines before and after each match
+# With context lines
 npx mcporter call serena.search_for_pattern \
   substring_pattern='throw new Error' \
   context_lines_before=2 \
   context_lines_after=2
-```
 
-### Restrict to a directory
-
-```bash
+# Restrict to a directory
 npx mcporter call serena.search_for_pattern \
   substring_pattern='fetchUser' \
   relative_path=src/api
-```
 
-### Filter by file glob
-
-```bash
-# Only search TypeScript files
+# Filter by file glob
 npx mcporter call serena.search_for_pattern \
   substring_pattern='import.*from' \
   paths_include_glob='*.ts'
-
-# Search test files only
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='describe\(' \
-  paths_include_glob='**/*.test.ts'
 
 # Exclude generated files
 npx mcporter call serena.search_for_pattern \
   substring_pattern='apiKey' \
   paths_exclude_glob='**/*.generated.ts'
-```
 
-### Search only code files (LSP-indexed)
-
-```bash
-# Restrict to files where symbols can be found and manipulated
+# Only code files (those with LSP symbols)
 npx mcporter call serena.search_for_pattern \
   substring_pattern='async function' \
   restrict_search_to_code_files=true
-```
 
-### Multi-line pattern (DOTALL is on)
-
-```bash
-# Find a function that calls console.log somewhere in its body
+# Multi-line pattern (DOTALL means . matches newlines)
 npx mcporter call serena.search_for_pattern \
-  substring_pattern='function.*?\{.*?console\.log.*?\}' \
-  paths_include_glob='*.ts'
+  substring_pattern='function.*?\{.*?console\.log.*?\}'
+
+# Line-anchored search with inline (?m) flag
+npx mcporter call serena.search_for_pattern \
+  substring_pattern='(?m)^import.*lodash'
 ```
 
-## When to use me
+## Parameter reference
 
-- You need to search across all files (including YAML, HTML, JSON) not just code.
-- You want grep-like functionality with glob-based file filtering.
-- You need context lines around matches to understand usage.
-- You're doing exploratory searches before using symbol-level tools.
+| Parameter                       | Required | Default | Notes                                                 |
+| ------------------------------- | -------- | ------- | ----------------------------------------------------- |
+| `substring_pattern`             | yes      | —       | Python regex pattern                                  |
+| `context_lines_before`          | no       | `0`     | Lines of context before each match                    |
+| `context_lines_after`           | no       | `0`     | Lines of context after each match                     |
+| `relative_path`                 | no       | `""`    | Restrict to file or directory                         |
+| `paths_include_glob`            | no       | `""`    | Include glob (matched against relative paths)         |
+| `paths_exclude_glob`            | no       | `""`    | Exclude glob (takes precedence)                       |
+| `restrict_search_to_code_files` | no       | `false` | `true` = only LSP-indexed files                       |
+| `max_answer_chars`              | no       | `-1`    | Limit output size; prefer narrowing the query instead |
 
 ## Notes
 
-- **Requires an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project.
-- The pattern uses Python `re` syntax with the `DOTALL` flag — `.` matches newlines. **`MULTILINE` is NOT enabled by default**, so `^` and `$` anchor to the start/end of the entire file content, not individual lines. Add `(?m)` to your pattern if you need line-level anchors (e.g., `(?m)^import`).
-- Avoid `.*` at the start or end of patterns; use it in the middle with non-greedy `.*?` for multi-line spans.
-- For finding specific named symbols (classes, functions), prefer `find_symbol` (see `serena-code-intelligence` skill) — it's faster and structurally aware.
-- Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
+- Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
+- Returns a mapping of file paths to lists of matched consecutive lines.
+- If output is too large, narrow the search with `relative_path`, globs, or `restrict_search_to_code_files` rather than increasing `max_answer_chars`.

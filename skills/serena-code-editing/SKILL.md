@@ -1,6 +1,6 @@
 ---
 name: serena-code-editing
-description: Edit source code using Serena MCP server symbol-aware and regex-based editing tools. Use for replacing symbol bodies, inserting code before/after symbols, renaming symbols across the codebase, or doing targeted regex/literal replacements within files.
+description: Edits source code via Serena MCP server using symbol-aware and regex-based tools. Use for replacing symbol bodies, inserting code before/after symbols, renaming symbols across the codebase, or doing targeted regex/literal replacements within files.
 license: MIT
 compatibility: opencode
 metadata:
@@ -8,21 +8,68 @@ metadata:
   category: code-editing
 ---
 
-## What I do
+## Tools
 
-Provide instructions for using Serena MCP server tools that modify source code: replacing content via regex or literal match, replacing full symbol bodies, inserting code around symbols, and renaming symbols codebase-wide via LSP.
+| Tool                   | Purpose                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| `replace_content`      | Replace text in a file via literal string or regex (Python `re`, DOTALL + MULTILINE) |
+| `replace_symbol_body`  | Replace the entire definition of a symbol                                            |
+| `insert_after_symbol`  | Insert code immediately after a symbol's definition                                  |
+| `insert_before_symbol` | Insert code immediately before a symbol's definition                                 |
+| `rename_symbol`        | Rename a symbol everywhere in the codebase via LSP                                   |
 
-## Tools in this category
+## Choosing an editing approach
 
-| Tool | Purpose |
-|------|---------|
-| `replace_content` | Replace text in a file using literal string or regex (Python `re`, DOTALL+MULTILINE) |
-| `replace_symbol_body` | Replace the entire definition of a symbol (function, class, method, etc.) |
-| `insert_after_symbol` | Insert code immediately after the end of a symbol's definition |
-| `insert_before_symbol` | Insert code immediately before the start of a symbol's definition |
-| `rename_symbol` | Rename a symbol everywhere in the codebase via LSP |
+Serena provides two approaches. Choose based on the scope of the change:
+
+### Symbolic editing — for replacing/adding whole symbols
+
+Use when you need to replace an entire function, method, class, or other symbol, or insert new ones adjacent to existing symbols.
+
+1. Use `find_symbol` (see `serena-code-intelligence` skill) to locate and confirm the symbol's `name_path`
+2. Use `replace_symbol_body` to replace its definition, or `insert_after_symbol` / `insert_before_symbol` to add adjacent code
+3. Use `find_referencing_symbols` to verify backward compatibility — if the change breaks callers, update all references
+4. Use `rename_symbol` for safe codebase-wide renames via LSP
+
+### File-based editing — for targeted line-level changes
+
+Use when you need to change just a few lines within a larger symbol, or do search-and-replace across a file.
+
+`replace_content` with `mode=regex` is the primary tool. **Use non-greedy wildcards** to avoid quoting large blocks of code:
+
+```
+needle: "beginning-text.*?end-of-text-to-be-replaced"
+```
+
+This matches everything between the delimiters without specifying the full original text. If the regex accidentally matches multiple occurrences and `allow_multiple_occurrences=false`, an error is returned — you can safely retry with a more specific pattern.
 
 ## How to call with mcporter
+
+### Replace content (regex — preferred for most edits)
+
+```bash
+# Replace a few lines using wildcard to avoid quoting the full block
+npx mcporter call serena.replace_content \
+  relative_path=src/config.ts \
+  mode=regex \
+  needle='const PORT.*?;' \
+  repl='const PORT = 8080;'
+
+# Replace all occurrences
+npx mcporter call serena.replace_content \
+  relative_path=src/utils.ts \
+  mode=regex \
+  needle='console\.log' \
+  repl='logger.info' \
+  allow_multiple_occurrences=true
+
+# Use backreferences — syntax is $!1, $!2 (NOT \1, \2)
+npx mcporter call serena.replace_content \
+  relative_path=src/config.ts \
+  mode=regex \
+  needle='(const \w+) = OLD' \
+  repl='$!1 = NEW'
+```
 
 ### Replace content (literal)
 
@@ -34,36 +81,10 @@ npx mcporter call serena.replace_content \
   repl='const PORT = 8080'
 ```
 
-### Replace content (regex — preferred for multi-line or fuzzy matches)
+### Replace a symbol body
 
 ```bash
-# Replace a function body matched by regex (non-greedy wildcard)
-npx mcporter call serena.replace_content \
-  relative_path=src/server.ts \
-  mode=regex \
-  needle='function oldName\(.*?\)\s*\{.*?\}' \
-  repl='function newName(args: string): void { console.log(args); }'
-
-# Replace all occurrences
-npx mcporter call serena.replace_content \
-  relative_path=src/utils.ts \
-  mode=regex \
-  needle='console\.log' \
-  repl='logger.info' \
-  allow_multiple_occurrences=true
-
-# Use backreferences in the replacement — syntax is $!1, $!2, etc. (NOT \1, \2)
-npx mcporter call serena.replace_content \
-  relative_path=src/config.ts \
-  mode=regex \
-  needle='(const \w+) = OLD' \
-  repl='$!1 = NEW'
-```
-
-### Replace an entire symbol body
-
-```bash
-# First locate the symbol with find_symbol, then replace its body
+# First locate the symbol, then replace its entire definition
 npx mcporter call serena.replace_symbol_body \
   relative_path=src/server.ts \
   name_path=MyClass/connect \
@@ -72,7 +93,7 @@ npx mcporter call serena.replace_symbol_body \
 }'
 ```
 
-### Insert code after a symbol
+### Insert code after / before a symbol
 
 ```bash
 # Insert a new method after an existing one
@@ -83,11 +104,7 @@ npx mcporter call serena.insert_after_symbol \
 disconnect(): void {
   this.pool.close();
 }'
-```
 
-### Insert code before a symbol
-
-```bash
 # Insert an import before the first symbol in the file
 npx mcporter call serena.insert_before_symbol \
   relative_path=src/server.ts \
@@ -96,7 +113,7 @@ npx mcporter call serena.insert_before_symbol \
 '
 ```
 
-### Rename a symbol across the entire codebase
+### Rename a symbol codebase-wide
 
 ```bash
 npx mcporter call serena.rename_symbol \
@@ -105,19 +122,38 @@ npx mcporter call serena.rename_symbol \
   new_name=connectToDatabase
 ```
 
-## When to use me
+## Parameter reference
 
-- You need to update a function or method body while preserving surrounding code.
-- You want to rename a symbol safely without manual find-and-replace.
-- You need to insert boilerplate (imports, new methods, new classes) adjacent to an existing symbol.
-- You need to do a targeted regex replacement within a file without reading the whole file first.
+| Tool                   | Parameter                    | Required | Default | Notes                                                                                          |
+| ---------------------- | ---------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `replace_content`      | `relative_path`              | yes      | —       |                                                                                                |
+|                        | `needle`                     | yes      | —       | Literal string or regex pattern                                                                |
+|                        | `repl`                       | yes      | —       | Replacement; use `$!1`, `$!2` for regex backreferences                                         |
+|                        | `mode`                       | yes      | —       | `"literal"` or `"regex"` (Python `re`, DOTALL + MULTILINE)                                     |
+|                        | `allow_multiple_occurrences` | no       | `false` | Error if multiple matches and `false`                                                          |
+| `replace_symbol_body`  | `name_path`                  | yes      | —       | Same matching as `find_symbol`                                                                 |
+|                        | `relative_path`              | yes      | —       |                                                                                                |
+|                        | `body`                       | yes      | —       | New definition including signature; does **not** include preceding docstrings/comments/imports |
+| `insert_after_symbol`  | `name_path`                  | yes      | —       |                                                                                                |
+|                        | `relative_path`              | yes      | —       |                                                                                                |
+|                        | `body`                       | yes      | —       | Inserted starting on the next line after the symbol                                            |
+| `insert_before_symbol` | `name_path`                  | yes      | —       |                                                                                                |
+|                        | `relative_path`              | yes      | —       |                                                                                                |
+|                        | `body`                       | yes      | —       | Inserted before the symbol's definition line                                                   |
+| `rename_symbol`        | `name_path`                  | yes      | —       | For overloaded methods (Java), include the signature                                           |
+|                        | `relative_path`              | yes      | —       |                                                                                                |
+|                        | `new_name`                   | yes      | —       | New symbol name                                                                                |
+
+## Key guidelines from Serena
+
+- **Backward compatibility**: When editing a symbol, ensure the change is backward-compatible or find and update all references with `find_referencing_symbols`.
+- **Regex wildcards**: Always try to use `.*?` wildcards to avoid specifying the full original text. For multi-line spans, DOTALL is enabled so `.` matches newlines.
+- **No verification needed**: Symbol editing tools are reliable — you never need to verify the result if the tool returns without error. Similarly, regex replacements are safe because mismatches cause an error rather than a wrong edit.
+- **`replace_symbol_body`**: The body is the symbol's definition including its signature line. It does **not** include preceding docstrings, comments, or imports — those are preserved automatically.
+- **Inserting at file boundaries**: Use `insert_after_symbol` with the last top-level symbol to append at end of file; use `insert_before_symbol` with the first top-level symbol to prepend.
 
 ## Notes
 
-- **Requires an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project.
-- Always use `find_symbol` (see `serena-code-intelligence` skill) to confirm a symbol's name path before editing.
-- Prefer `mode=regex` with non-greedy wildcards (`.*?`) for multi-line replacements — it avoids quoting large blocks of code.
-- `rename_symbol` uses LSP rename, so it is safe across all files that import the symbol.
-- `replace_symbol_body` does NOT include preceding docstrings/comments — those are preserved automatically.
-- `replace_symbol_body` appends a trailing newline after the replaced body. This is normal; verify with `read_file` if the exact output matters.
-- Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
+- Requires an active project in editing mode (`serena-project` skill).
+- Always use `find_symbol` to confirm a symbol's `name_path` and `relative_path` before editing.
+- `rename_symbol` uses LSP rename — safe across all files that reference the symbol.

@@ -1,6 +1,6 @@
 ---
 name: serena-shell
-description: Execute shell commands in the project context using Serena MCP server. Use for running builds, tests, linters, git commands, or any shell operation within the active project directory.
+description: Executes shell commands in the project context via Serena MCP server. Use for running builds, tests, linters, git commands, or any CLI operation within the active project directory. Never use for long-running servers or interactive processes.
 license: MIT
 compatibility: opencode
 metadata:
@@ -8,50 +8,32 @@ metadata:
   category: shell
 ---
 
-## What I do
-
-Provide instructions for using `execute_shell_command`, the Serena MCP server tool that runs shell commands within the project. This is the right tool when you need to execute build tools, test runners, package managers, or any other CLI program.
-
 ## Tool
 
-| Tool | Purpose |
-|------|---------|
-| `execute_shell_command` | Execute a shell command in the project root (or a specified subdirectory) |
+| Tool                    | Purpose                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `execute_shell_command` | Execute a shell command in the project root (or a specified subdirectory) and return output |
+
+## Before running commands
+
+If the project has a memory with suggested commands (e.g. `build/commands`), **read it first** (see `serena-memory` skill) to use the correct project-specific invocations.
 
 ## How to call with mcporter
 
-### Run a basic command
-
-```bash
-npx mcporter call serena.execute_shell_command command='npm test'
-npx mcporter call serena.execute_shell_command command='pnpm build'
-npx mcporter call serena.execute_shell_command command='cargo check'
-```
-
-### Run in a specific directory
-
-```bash
-npx mcporter call serena.execute_shell_command \
-  command='npm install' \
-  cwd=packages/frontend
-```
-
-### Suppress stderr capture
-
-```bash
-# Only capture stdout (useful when stderr is noisy but not relevant)
-npx mcporter call serena.execute_shell_command \
-  command='git log --oneline -10' \
-  capture_stderr=false
-```
-
-### Common use cases
-
 ```bash
 # Run tests
-npx mcporter call serena.execute_shell_command command='pytest tests/ -v'
+npx mcporter call serena.execute_shell_command command='npm test'
 
-# Check types
+# Build
+npx mcporter call serena.execute_shell_command command='cargo build'
+
+# Run in a specific subdirectory
+npx mcporter call serena.execute_shell_command command='npm install' cwd=packages/frontend
+
+# Suppress stderr (useful when stderr is noisy but irrelevant)
+npx mcporter call serena.execute_shell_command command='git log --oneline -10' capture_stderr=false
+
+# Type-check
 npx mcporter call serena.execute_shell_command command='tsc --noEmit'
 
 # Lint
@@ -60,26 +42,27 @@ npx mcporter call serena.execute_shell_command command='eslint src/'
 # Git status
 npx mcporter call serena.execute_shell_command command='git status'
 
-# Install dependencies
-npx mcporter call serena.execute_shell_command command='npm ci'
-
-# Run a custom script
+# Custom script
 npx mcporter call serena.execute_shell_command command='./scripts/generate.sh'
 ```
 
-## When to use me
+## Parameter reference
 
-- You need to verify a build compiles after making code changes.
-- You want to run the test suite and see results.
-- You need to execute linters, formatters, or type checkers.
-- You need to run git commands or other project utilities.
-- You want to install or update dependencies.
+| Parameter          | Required | Default      | Notes                                                     |
+| ------------------ | -------- | ------------ | --------------------------------------------------------- |
+| `command`          | yes      | —            | The shell command to execute                              |
+| `cwd`              | no       | project root | Working directory (relative to project root)              |
+| `capture_stderr`   | no       | `true`       | Set `false` to suppress stderr in output                  |
+| `max_answer_chars` | no       | `-1`         | Only adjust if output is too large and cannot be narrowed |
+
+## Safety rules
+
+- **Never execute unsafe or destructive commands** (`rm -rf /`, `dd`, format commands, etc.)
+- **Do not start long-running processes** (servers, watchers) that are not intended to terminate quickly
+- **Do not start processes requiring user interaction** (interactive prompts, editors)
 
 ## Notes
 
-- **Requires an active project and the keep-alive daemon running.** mcporter spawns a fresh Serena process per call — without the daemon, activation state is lost between invocations. If the daemon is not running: verify `~/.mcporter/mcporter.json` has `"lifecycle": "keep-alive"` for the `serena` entry, then run `npx mcporter daemon start`. Use the `serena-project` skill to activate a project.
-- **Never execute unsafe or destructive commands** (e.g., `rm -rf /`, `dd`, format commands).
-- Do not use this tool to start long-running servers or processes that require interactive input.
-- If Serena has a memory with suggested commands for the project, read that first (`serena-memory` skill).
+- Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
 - The command runs in the project root by default; use `cwd` to target a subdirectory.
-- Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
+- Returns a JSON object with `stdout` and optionally `stderr`.
