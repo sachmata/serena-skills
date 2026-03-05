@@ -102,13 +102,14 @@ Skills are Markdown files that OpenCode loads on-demand to give the agent reusab
 
 ### Install all skills globally (recommended)
 
-Run this one-liner from any directory — it clones the repo and symlinks (or copies) the skills into your global OpenCode skills directory:
+Clone the repo to your preferred location, then run the following from inside it:
 
 ```bash
-git clone https://github.com/sachmata/serena-skills ~/Projects/serena-skills
+git clone https://github.com/sachmata/serena-skills
+cd serena-skills
 
 # Copy all skills to the global OpenCode skills directory
-for skill_dir in ~/Projects/serena-skills/skills/*/; do
+for skill_dir in skills/*/; do
   skill_name=$(basename "$skill_dir")
   mkdir -p ~/.config/opencode/skills/"$skill_name"
   cp "$skill_dir/SKILL.md" ~/.config/opencode/skills/"$skill_name"/SKILL.md
@@ -118,7 +119,7 @@ done
 Or, if you prefer symlinks so `git pull` keeps them up-to-date automatically:
 
 ```bash
-for skill_dir in ~/Projects/serena-skills/skills/*/; do
+for skill_dir in skills/*/; do
   skill_name=$(basename "$skill_dir")
   mkdir -p ~/.config/opencode/skills/"$skill_name"
   ln -sf "$(realpath "$skill_dir/SKILL.md")" \
@@ -131,18 +132,17 @@ done
 ```bash
 skill=serena-code-editing
 mkdir -p ~/.config/opencode/skills/$skill
-cp ~/Projects/serena-skills/skills/$skill/SKILL.md \
-   ~/.config/opencode/skills/$skill/SKILL.md
+cp skills/$skill/SKILL.md ~/.config/opencode/skills/$skill/SKILL.md
 ```
 
 ### Install for project-local use
 
 ```bash
-# From inside your project root
-for skill_dir in ~/Projects/serena-skills/skills/*/; do
+# From the serena-skills repo root
+for skill_dir in skills/*/; do
   skill_name=$(basename "$skill_dir")
-  mkdir -p .opencode/skills/"$skill_name"
-  cp "$skill_dir/SKILL.md" .opencode/skills/"$skill_name"/SKILL.md
+  mkdir -p /path/to/your-project/.opencode/skills/"$skill_name"
+  cp "$skill_dir/SKILL.md" /path/to/your-project/.opencode/skills/"$skill_name"/SKILL.md
 done
 ```
 
