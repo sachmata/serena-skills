@@ -10,13 +10,13 @@ metadata:
 
 ## What I do
 
-Provide instructions for using `serena_search_for_pattern`, the Serena MCP server tool for flexible full-text regex search across the codebase. Supports file glob filters, directory restriction, context lines, and code-only mode.
+Provide instructions for using `search_for_pattern`, the Serena MCP server tool for flexible full-text regex search across the codebase. Supports file glob filters, directory restriction, context lines, and code-only mode.
 
 ## Tool
 
 | Tool | Purpose |
 |------|---------|
-| `serena_search_for_pattern` | Search file contents using Python regex (DOTALL + MULTILINE flags enabled) |
+| `search_for_pattern` | Search file contents using Python regex (DOTALL + MULTILINE flags enabled) |
 
 ## How to call with mcporter
 
@@ -24,11 +24,11 @@ Provide instructions for using `serena_search_for_pattern`, the Serena MCP serve
 
 ```bash
 # Find all files containing "TODO" comments
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='TODO'
 
 # Case-sensitive class name search
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='class\s+MyClass'
 ```
 
@@ -36,7 +36,7 @@ npx mcporter call serena.serena_search_for_pattern \
 
 ```bash
 # Show 2 lines before and after each match
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='throw new Error' \
   context_lines_before=2 \
   context_lines_after=2
@@ -45,7 +45,7 @@ npx mcporter call serena.serena_search_for_pattern \
 ### Restrict to a directory
 
 ```bash
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='fetchUser' \
   relative_path=src/api
 ```
@@ -54,17 +54,17 @@ npx mcporter call serena.serena_search_for_pattern \
 
 ```bash
 # Only search TypeScript files
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='import.*from' \
   paths_include_glob='*.ts'
 
 # Search test files only
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='describe\(' \
   paths_include_glob='**/*.test.ts'
 
 # Exclude generated files
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='apiKey' \
   paths_exclude_glob='**/*.generated.ts'
 ```
@@ -73,7 +73,7 @@ npx mcporter call serena.serena_search_for_pattern \
 
 ```bash
 # Restrict to files where symbols can be found and manipulated
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='async function' \
   restrict_search_to_code_files=true
 ```
@@ -82,7 +82,7 @@ npx mcporter call serena.serena_search_for_pattern \
 
 ```bash
 # Find a function that calls console.log somewhere in its body
-npx mcporter call serena.serena_search_for_pattern \
+npx mcporter call serena.search_for_pattern \
   substring_pattern='function.*?\{.*?console\.log.*?\}' \
   paths_include_glob='*.ts'
 ```
@@ -98,5 +98,5 @@ npx mcporter call serena.serena_search_for_pattern \
 
 - The pattern uses Python `re` syntax with `DOTALL` and `MULTILINE` flags — `.` matches newlines.
 - Avoid `.*` at the start or end of patterns; use it in the middle with non-greedy `.*?` for multi-line spans.
-- For finding specific named symbols (classes, functions), prefer `serena_find_symbol` (see `serena-code-intelligence` skill) — it's faster and structurally aware.
+- For finding specific named symbols (classes, functions), prefer `find_symbol` (see `serena-code-intelligence` skill) — it's faster and structurally aware.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.

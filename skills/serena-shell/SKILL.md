@@ -10,28 +10,28 @@ metadata:
 
 ## What I do
 
-Provide instructions for using `serena_execute_shell_command`, the Serena MCP server tool that runs shell commands within the project. This is the right tool when you need to execute build tools, test runners, package managers, or any other CLI program.
+Provide instructions for using `execute_shell_command`, the Serena MCP server tool that runs shell commands within the project. This is the right tool when you need to execute build tools, test runners, package managers, or any other CLI program.
 
 ## Tool
 
 | Tool | Purpose |
 |------|---------|
-| `serena_execute_shell_command` | Execute a shell command in the project root (or a specified subdirectory) |
+| `execute_shell_command` | Execute a shell command in the project root (or a specified subdirectory) |
 
 ## How to call with mcporter
 
 ### Run a basic command
 
 ```bash
-npx mcporter call serena.serena_execute_shell_command command='npm test'
-npx mcporter call serena.serena_execute_shell_command command='pnpm build'
-npx mcporter call serena.serena_execute_shell_command command='cargo check'
+npx mcporter call serena.execute_shell_command command='npm test'
+npx mcporter call serena.execute_shell_command command='pnpm build'
+npx mcporter call serena.execute_shell_command command='cargo check'
 ```
 
 ### Run in a specific directory
 
 ```bash
-npx mcporter call serena.serena_execute_shell_command \
+npx mcporter call serena.execute_shell_command \
   command='npm install' \
   cwd=packages/frontend
 ```
@@ -40,7 +40,7 @@ npx mcporter call serena.serena_execute_shell_command \
 
 ```bash
 # Only capture stdout (useful when stderr is noisy but not relevant)
-npx mcporter call serena.serena_execute_shell_command \
+npx mcporter call serena.execute_shell_command \
   command='git log --oneline -10' \
   capture_stderr=false
 ```
@@ -49,22 +49,22 @@ npx mcporter call serena.serena_execute_shell_command \
 
 ```bash
 # Run tests
-npx mcporter call serena.serena_execute_shell_command command='pytest tests/ -v'
+npx mcporter call serena.execute_shell_command command='pytest tests/ -v'
 
 # Check types
-npx mcporter call serena.serena_execute_shell_command command='tsc --noEmit'
+npx mcporter call serena.execute_shell_command command='tsc --noEmit'
 
 # Lint
-npx mcporter call serena.serena_execute_shell_command command='eslint src/'
+npx mcporter call serena.execute_shell_command command='eslint src/'
 
 # Git status
-npx mcporter call serena.serena_execute_shell_command command='git status'
+npx mcporter call serena.execute_shell_command command='git status'
 
 # Install dependencies
-npx mcporter call serena.serena_execute_shell_command command='npm ci'
+npx mcporter call serena.execute_shell_command command='npm ci'
 
 # Run a custom script
-npx mcporter call serena.serena_execute_shell_command command='./scripts/generate.sh'
+npx mcporter call serena.execute_shell_command command='./scripts/generate.sh'
 ```
 
 ## When to use me

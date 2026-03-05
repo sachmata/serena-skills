@@ -16,10 +16,10 @@ Provide instructions for using Serena MCP server tools that handle file system o
 
 | Tool | Purpose |
 |------|---------|
-| `serena_read_file` | Read file content (full or a line range) |
-| `serena_create_text_file` | Write a new file or overwrite an existing one |
-| `serena_list_dir` | List files and directories (optionally recursive) |
-| `serena_find_file` | Find files by filename mask (wildcards `*` and `?`) |
+| `read_file` | Read file content (full or a line range) |
+| `create_text_file` | Write a new file or overwrite an existing one |
+| `list_dir` | List files and directories (optionally recursive) |
+| `find_file` | Find files by filename mask (wildcards `*` and `?`) |
 
 ## How to call with mcporter
 
@@ -29,17 +29,17 @@ MCPorter lets you call Serena MCP tools directly from the CLI without writing Ty
 
 ```bash
 # Read entire file
-npx mcporter call serena.serena_read_file relative_path=src/index.ts
+npx mcporter call serena.read_file relative_path=src/index.ts
 
 # Read a specific line range (0-based)
-npx mcporter call serena.serena_read_file relative_path=src/index.ts start_line=10 end_line=50
+npx mcporter call serena.read_file relative_path=src/index.ts start_line=10 end_line=50
 ```
 
 ### Write / overwrite a file
 
 ```bash
 # Create or overwrite a file (provide the full content)
-npx mcporter call serena.serena_create_text_file \
+npx mcporter call serena.create_text_file \
   relative_path=src/hello.ts \
   content='export const hello = () => "world";'
 ```
@@ -48,20 +48,20 @@ npx mcporter call serena.serena_create_text_file \
 
 ```bash
 # Shallow listing
-npx mcporter call serena.serena_list_dir relative_path=src recursive=false
+npx mcporter call serena.list_dir relative_path=src recursive=false
 
 # Recursive listing (skips gitignored files)
-npx mcporter call serena.serena_list_dir relative_path=. recursive=true skip_ignored_files=true
+npx mcporter call serena.list_dir relative_path=. recursive=true skip_ignored_files=true
 ```
 
 ### Find files by mask
 
 ```bash
 # Find all TypeScript files under src/
-npx mcporter call serena.serena_find_file file_mask="*.ts" relative_path=src
+npx mcporter call serena.find_file file_mask="*.ts" relative_path=src
 
 # Find a specific config file anywhere in the project
-npx mcporter call serena.serena_find_file file_mask="tsconfig*.json" relative_path=.
+npx mcporter call serena.find_file file_mask="tsconfig*.json" relative_path=.
 ```
 
 ## When to use me
@@ -73,7 +73,7 @@ npx mcporter call serena.serena_find_file file_mask="tsconfig*.json" relative_pa
 
 ## Notes
 
-- `serena_read_file` line indices are **0-based**.
-- `serena_create_text_file` **overwrites** the target file if it already exists — use with care.
+- `read_file` line indices are **0-based**.
+- `create_text_file` **overwrites** the target file if it already exists — use with care.
 - Prefer symbolic tools (`serena-code-intelligence`, `serena-code-editing` skills) when you already know the symbol name; they are faster and more precise than reading raw files.
 - Set up mcporter config to point at your Serena MCP server before using these calls. Run `npx mcporter list serena` to verify connectivity.

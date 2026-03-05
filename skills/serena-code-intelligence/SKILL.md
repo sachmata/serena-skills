@@ -16,9 +16,9 @@ Provide instructions for using Serena MCP server tools that leverage LSP (Langua
 
 | Tool | Purpose |
 |------|---------|
-| `serena_get_symbols_overview` | High-level overview of all symbols in a file (classes, functions, variables, etc.) |
-| `serena_find_symbol` | Find symbols by name path pattern; optionally include body or hover info |
-| `serena_find_referencing_symbols` | Find all references to a given symbol across the codebase |
+| `get_symbols_overview` | High-level overview of all symbols in a file (classes, functions, variables, etc.) |
+| `find_symbol` | Find symbols by name path pattern; optionally include body or hover info |
+| `find_referencing_symbols` | Find all references to a given symbol across the codebase |
 
 ## Name path syntax
 
@@ -35,34 +35,34 @@ Serena uses a **name path** to identify symbols within a file:
 
 ```bash
 # Flat overview (top-level symbols only)
-npx mcporter call serena.serena_get_symbols_overview relative_path=src/index.ts
+npx mcporter call serena.get_symbols_overview relative_path=src/index.ts
 
 # Include immediate children (depth=1)
-npx mcporter call serena.serena_get_symbols_overview relative_path=src/index.ts depth=1
+npx mcporter call serena.get_symbols_overview relative_path=src/index.ts depth=1
 ```
 
 ### Find a symbol by name
 
 ```bash
 # Find any symbol named "connect" anywhere in the codebase
-npx mcporter call serena.serena_find_symbol name_path_pattern=connect
+npx mcporter call serena.find_symbol name_path_pattern=connect
 
 # Find a method inside a specific class
-npx mcporter call serena.serena_find_symbol name_path_pattern=MyClass/connect
+npx mcporter call serena.find_symbol name_path_pattern=MyClass/connect
 
 # Restrict search to a specific file, include its body
-npx mcporter call serena.serena_find_symbol \
+npx mcporter call serena.find_symbol \
   name_path_pattern=connect \
   relative_path=src/server.ts \
   include_body=true
 
 # Substring match (finds "connect", "connectToServer", "connectDB", etc.)
-npx mcporter call serena.serena_find_symbol \
+npx mcporter call serena.find_symbol \
   name_path_pattern=connect \
   substring_matching=true
 
 # Include children (e.g. methods of a class, depth=1)
-npx mcporter call serena.serena_find_symbol \
+npx mcporter call serena.find_symbol \
   name_path_pattern=MyClass \
   relative_path=src/server.ts \
   depth=1
@@ -72,7 +72,7 @@ npx mcporter call serena.serena_find_symbol \
 
 ```bash
 # Find everything that references the "connect" function in server.ts
-npx mcporter call serena.serena_find_referencing_symbols \
+npx mcporter call serena.find_referencing_symbols \
   name_path=connect \
   relative_path=src/server.ts
 ```

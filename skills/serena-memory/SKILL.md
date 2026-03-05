@@ -16,12 +16,12 @@ Provide instructions for using Serena MCP server memory tools. Memories persist 
 
 | Tool | Purpose |
 |------|---------|
-| `serena_write_memory` | Create or overwrite a memory |
-| `serena_read_memory` | Read a memory's content |
-| `serena_list_memories` | List all available memories, optionally filtered by topic |
-| `serena_edit_memory` | Replace content in a memory via literal or regex |
-| `serena_rename_memory` | Rename or move a memory (use `/` for topic organization) |
-| `serena_delete_memory` | Delete a memory (only when explicitly requested) |
+| `write_memory` | Create or overwrite a memory |
+| `read_memory` | Read a memory's content |
+| `list_memories` | List all available memories, optionally filtered by topic |
+| `edit_memory` | Replace content in a memory via literal or regex |
+| `rename_memory` | Rename or move a memory (use `/` for topic organization) |
+| `delete_memory` | Delete a memory (only when explicitly requested) |
 
 ## Memory naming conventions
 
@@ -35,7 +35,7 @@ Provide instructions for using Serena MCP server memory tools. Memories persist 
 
 ```bash
 # Save project build commands
-npx mcporter call serena.serena_write_memory \
+npx mcporter call serena.write_memory \
   memory_name=build/commands \
   content='## Build Commands
 - Build: `npm run build`
@@ -44,7 +44,7 @@ npx mcporter call serena.serena_write_memory \
 '
 
 # Save a global style guide
-npx mcporter call serena.serena_write_memory \
+npx mcporter call serena.write_memory \
   memory_name=global/typescript/style-guide \
   content='## TypeScript Style
 - Use strict mode
@@ -56,40 +56,40 @@ npx mcporter call serena.serena_write_memory \
 ### Read a memory
 
 ```bash
-npx mcporter call serena.serena_read_memory memory_name=build/commands
-npx mcporter call serena.serena_read_memory memory_name=global/typescript/style-guide
+npx mcporter call serena.read_memory memory_name=build/commands
+npx mcporter call serena.read_memory memory_name=global/typescript/style-guide
 ```
 
 ### List memories
 
 ```bash
 # List all memories
-npx mcporter call serena.serena_list_memories
+npx mcporter call serena.list_memories
 
 # Filter by topic
-npx mcporter call serena.serena_list_memories topic=build
-npx mcporter call serena.serena_list_memories topic=global
+npx mcporter call serena.list_memories topic=build
+npx mcporter call serena.list_memories topic=global
 ```
 
 ### Edit a memory (partial update)
 
 ```bash
 # Literal replacement
-npx mcporter call serena.serena_edit_memory \
+npx mcporter call serena.edit_memory \
   memory_name=build/commands \
   mode=literal \
   needle='npm test' \
   repl='npm run test:ci'
 
 # Regex replacement
-npx mcporter call serena.serena_edit_memory \
+npx mcporter call serena.edit_memory \
   memory_name=build/commands \
   mode=regex \
   needle='- Build:.*' \
   repl='- Build: `pnpm build`'
 
 # Replace multiple occurrences
-npx mcporter call serena.serena_edit_memory \
+npx mcporter call serena.edit_memory \
   memory_name=build/commands \
   mode=literal \
   needle='npm' \
@@ -101,12 +101,12 @@ npx mcporter call serena.serena_edit_memory \
 
 ```bash
 # Move to a different topic
-npx mcporter call serena.serena_rename_memory \
+npx mcporter call serena.rename_memory \
   old_name=commands \
   new_name=build/commands
 
 # Rename within same topic
-npx mcporter call serena.serena_rename_memory \
+npx mcporter call serena.rename_memory \
   old_name=build/commands \
   new_name=build/scripts
 ```
@@ -115,7 +115,7 @@ npx mcporter call serena.serena_rename_memory \
 
 ```bash
 # Only delete when explicitly instructed
-npx mcporter call serena.serena_delete_memory memory_name=build/commands
+npx mcporter call serena.delete_memory memory_name=build/commands
 ```
 
 ## When to use me
@@ -127,7 +127,7 @@ npx mcporter call serena.serena_delete_memory memory_name=build/commands
 
 ## Notes
 
-- Always check `serena_list_memories` before writing to avoid overwriting important existing memories.
+- Always check `list_memories` before writing to avoid overwriting important existing memories.
 - Read relevant memories at the start of a work session to load project context.
 - `global/` memories are shared across all projects — be careful about what you store there.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.

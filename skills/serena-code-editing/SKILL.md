@@ -16,18 +16,18 @@ Provide instructions for using Serena MCP server tools that modify source code: 
 
 | Tool | Purpose |
 |------|---------|
-| `serena_replace_content` | Replace text in a file using literal string or regex (Python `re`, DOTALL+MULTILINE) |
-| `serena_replace_symbol_body` | Replace the entire definition of a symbol (function, class, method, etc.) |
-| `serena_insert_after_symbol` | Insert code immediately after the end of a symbol's definition |
-| `serena_insert_before_symbol` | Insert code immediately before the start of a symbol's definition |
-| `serena_rename_symbol` | Rename a symbol everywhere in the codebase via LSP |
+| `replace_content` | Replace text in a file using literal string or regex (Python `re`, DOTALL+MULTILINE) |
+| `replace_symbol_body` | Replace the entire definition of a symbol (function, class, method, etc.) |
+| `insert_after_symbol` | Insert code immediately after the end of a symbol's definition |
+| `insert_before_symbol` | Insert code immediately before the start of a symbol's definition |
+| `rename_symbol` | Rename a symbol everywhere in the codebase via LSP |
 
 ## How to call with mcporter
 
 ### Replace content (literal)
 
 ```bash
-npx mcporter call serena.serena_replace_content \
+npx mcporter call serena.replace_content \
   relative_path=src/config.ts \
   mode=literal \
   needle='const PORT = 3000' \
@@ -38,14 +38,14 @@ npx mcporter call serena.serena_replace_content \
 
 ```bash
 # Replace a function body matched by regex (non-greedy wildcard)
-npx mcporter call serena.serena_replace_content \
+npx mcporter call serena.replace_content \
   relative_path=src/server.ts \
   mode=regex \
   needle='function oldName\(.*?\)\s*\{.*?\}' \
   repl='function newName(args: string): void { console.log(args); }'
 
 # Replace all occurrences
-npx mcporter call serena.serena_replace_content \
+npx mcporter call serena.replace_content \
   relative_path=src/utils.ts \
   mode=regex \
   needle='console\.log' \
@@ -56,8 +56,8 @@ npx mcporter call serena.serena_replace_content \
 ### Replace an entire symbol body
 
 ```bash
-# First locate the symbol with serena_find_symbol, then replace its body
-npx mcporter call serena.serena_replace_symbol_body \
+# First locate the symbol with find_symbol, then replace its body
+npx mcporter call serena.replace_symbol_body \
   relative_path=src/server.ts \
   name_path=MyClass/connect \
   body='connect(host: string): Promise<void> {
@@ -69,7 +69,7 @@ npx mcporter call serena.serena_replace_symbol_body \
 
 ```bash
 # Insert a new method after an existing one
-npx mcporter call serena.serena_insert_after_symbol \
+npx mcporter call serena.insert_after_symbol \
   relative_path=src/server.ts \
   name_path=MyClass/connect \
   body='
@@ -82,7 +82,7 @@ disconnect(): void {
 
 ```bash
 # Insert an import before the first symbol in the file
-npx mcporter call serena.serena_insert_before_symbol \
+npx mcporter call serena.insert_before_symbol \
   relative_path=src/server.ts \
   name_path=MyClass \
   body='import { Pool } from "pg";
@@ -92,7 +92,7 @@ npx mcporter call serena.serena_insert_before_symbol \
 ### Rename a symbol across the entire codebase
 
 ```bash
-npx mcporter call serena.serena_rename_symbol \
+npx mcporter call serena.rename_symbol \
   relative_path=src/server.ts \
   name_path=MyClass/connect \
   new_name=connectToDatabase
@@ -107,8 +107,8 @@ npx mcporter call serena.serena_rename_symbol \
 
 ## Notes
 
-- Always use `serena_find_symbol` (see `serena-code-intelligence` skill) to confirm a symbol's name path before editing.
+- Always use `find_symbol` (see `serena-code-intelligence` skill) to confirm a symbol's name path before editing.
 - Prefer `mode=regex` with non-greedy wildcards (`.*?`) for multi-line replacements — it avoids quoting large blocks of code.
-- `serena_rename_symbol` uses LSP rename, so it is safe across all files that import the symbol.
-- `serena_replace_symbol_body` does NOT include preceding docstrings/comments — those are preserved automatically.
+- `rename_symbol` uses LSP rename, so it is safe across all files that import the symbol.
+- `replace_symbol_body` does NOT include preceding docstrings/comments — those are preserved automatically.
 - Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
