@@ -40,69 +40,15 @@ Symbols are identified by a **name path** — a `/`-separated path in the symbol
 
 With `substring_matching=true`, `Foo/get` matches `Foo/getValue`, `Foo/getData`, etc.
 
-## How to call with mcporter
-
-### Get symbols overview
+## Quick reference
 
 ```bash
-# Top-level symbols only (default depth=0)
-npx mcporter call serena.get_symbols_overview relative_path=src/server.ts
-
-# Include immediate children (e.g. class methods)
-npx mcporter call serena.get_symbols_overview relative_path=src/server.ts depth=1
-
-# Include two levels of nesting (e.g. class → method → nested function/type)
-npx mcporter call serena.get_symbols_overview relative_path=src/server.ts depth=2
+sr get_symbols_overview relative_path=src/server.ts depth=1
+sr find_symbol name_path_pattern=MyClass/connect relative_path=src/server.ts include_body=true
+sr find_referencing_symbols name_path=connect relative_path=src/server.ts
 ```
 
-**Depth behavior:** `depth=0` returns only top-level symbols (classes, standalone functions). `depth=1` adds their immediate children (methods, properties). `depth=2` adds a further level (e.g. nested classes, inner functions, or local types within methods). Higher values continue expanding the tree; use sparingly as output grows quickly.
-
-### Find a symbol
-
-```bash
-# Find by name anywhere in the codebase
-npx mcporter call serena.find_symbol name_path_pattern=connect
-
-# Find method inside a class, restricted to one file
-npx mcporter call serena.find_symbol \
-  name_path_pattern=MyClass/connect \
-  relative_path=src/server.ts
-
-# Read the full body of a known symbol
-npx mcporter call serena.find_symbol \
-  name_path_pattern=Foo/__init__ \
-  relative_path=src/foo.py \
-  include_body=true
-
-# List all methods of a class without bodies
-npx mcporter call serena.find_symbol \
-  name_path_pattern=MyClass \
-  relative_path=src/server.ts \
-  depth=1 \
-  include_body=false
-
-# Substring match (finds "connect", "connectToServer", "connectDB", etc.)
-npx mcporter call serena.find_symbol \
-  name_path_pattern=connect \
-  substring_matching=true
-
-# Include hover/docstring info (without full body; slower for C/C++)
-npx mcporter call serena.find_symbol \
-  name_path_pattern=MyClass \
-  relative_path=src/server.ts \
-  include_info=true
-```
-
-### Find all references to a symbol
-
-```bash
-# Find everything that references "connect" in server.ts
-npx mcporter call serena.find_referencing_symbols \
-  name_path=connect \
-  relative_path=src/server.ts
-```
-
-Returns metadata about each referencing symbol plus a short code snippet around the reference.
+**Depth behavior:** `depth=0` = top-level only. `depth=1` = immediate children (methods, properties). Higher values expand the tree further; use sparingly.
 
 ## Parameter reference
 
@@ -123,7 +69,6 @@ Returns metadata about each referencing symbol plus a short code snippet around 
 
 ## Notes
 
-- Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
 - Always prefer symbolic tools over raw grep or `read_file` when looking for specific code symbols.
 - Use `relative_path` to restrict searches to a file or directory — significantly speeds up lookup and reduces output.
 - `include_info` can be slow for C/C++. Info is never included for child symbols.

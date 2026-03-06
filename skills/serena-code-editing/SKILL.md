@@ -43,84 +43,18 @@ needle: "beginning-text.*?end-of-text-to-be-replaced"
 
 This matches everything between the delimiters without specifying the full original text. If the regex accidentally matches multiple occurrences and `allow_multiple_occurrences=false`, an error is returned — you can safely retry with a more specific pattern.
 
-## How to call with mcporter
-
-### Replace content (regex — preferred for most edits)
+## Quick reference
 
 ```bash
-# Replace a few lines using wildcard to avoid quoting the full block
-npx mcporter call serena.replace_content \
-  relative_path=src/config.ts \
-  mode=regex \
-  needle='const PORT.*?;' \
-  repl='const PORT = 8080;'
-
-# Replace all occurrences
-npx mcporter call serena.replace_content \
-  relative_path=src/utils.ts \
-  mode=regex \
-  needle='console\.log' \
-  repl='logger.info' \
-  allow_multiple_occurrences=true
-
-# Use backreferences — syntax is $!1, $!2 (NOT \1, \2)
-npx mcporter call serena.replace_content \
-  relative_path=src/config.ts \
-  mode=regex \
-  needle='(const \w+) = OLD' \
-  repl='$!1 = NEW'
+sr replace_content relative_path=src/config.ts mode=regex needle='const PORT.*?;' repl='const PORT = 8080;'
+sr replace_content relative_path=src/utils.ts mode=regex needle='console\.log' repl='logger.info' allow_multiple_occurrences=true
+sr replace_symbol_body relative_path=src/server.ts name_path=MyClass/connect body='connect(host: string): Promise<void> { return this.pool.connect(host); }'
+sr insert_after_symbol relative_path=src/server.ts name_path=MyClass/connect body='disconnect(): void { this.pool.close(); }'
+sr insert_before_symbol relative_path=src/server.ts name_path=MyClass body='import { Pool } from "pg";'
+sr rename_symbol relative_path=src/server.ts name_path=MyClass/connect new_name=connectToDatabase
 ```
 
-### Replace content (literal)
-
-```bash
-npx mcporter call serena.replace_content \
-  relative_path=src/config.ts \
-  mode=literal \
-  needle='const PORT = 3000' \
-  repl='const PORT = 8080'
-```
-
-### Replace a symbol body
-
-```bash
-# First locate the symbol, then replace its entire definition
-npx mcporter call serena.replace_symbol_body \
-  relative_path=src/server.ts \
-  name_path=MyClass/connect \
-  body='connect(host: string): Promise<void> {
-  return this.pool.connect(host);
-}'
-```
-
-### Insert code after / before a symbol
-
-```bash
-# Insert a new method after an existing one
-npx mcporter call serena.insert_after_symbol \
-  relative_path=src/server.ts \
-  name_path=MyClass/connect \
-  body='
-disconnect(): void {
-  this.pool.close();
-}'
-
-# Insert an import before the first symbol in the file
-npx mcporter call serena.insert_before_symbol \
-  relative_path=src/server.ts \
-  name_path=MyClass \
-  body='import { Pool } from "pg";
-'
-```
-
-### Rename a symbol codebase-wide
-
-```bash
-npx mcporter call serena.rename_symbol \
-  relative_path=src/server.ts \
-  name_path=MyClass/connect \
-  new_name=connectToDatabase
-```
+**Backreferences** in regex mode use `$!1`, `$!2` syntax (not `\1`, `\2`).
 
 ## Parameter reference
 
@@ -156,7 +90,7 @@ npx mcporter call serena.rename_symbol \
 
 ## Notes
 
-- Requires an active project in editing mode (`serena-project` skill).
+- Requires an active project in **editing mode** (see `serena-project` skill).
 - Always use Serena's editing tools instead of the agent's built-in string replace or file rewrite — Serena validates edits and supports LSP-aware operations.
 - Always use `find_symbol` to confirm a symbol's `name_path` and `relative_path` before editing.
 - `rename_symbol` uses LSP rename — safe across all files that reference the symbol.

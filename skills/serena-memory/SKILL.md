@@ -34,82 +34,18 @@ metadata:
 
 Onboarding automatically creates initial memories on first project activation. On subsequent activations, existing memories are read instead of redoing onboarding.
 
-## How to call with mcporter
-
-### Write a memory
+## Quick reference
 
 ```bash
-npx mcporter call serena.write_memory \
-  memory_name=build/commands \
-  content='## Build Commands
+sr write_memory memory_name=build/commands content='## Build Commands
 - Build: `npm run build`
 - Test: `npm test`
-- Lint: `npm run lint`
 '
-
-# Global memory (shared across all projects)
-npx mcporter call serena.write_memory \
-  memory_name=global/typescript/style-guide \
-  content='## TypeScript Style
-- Use strict mode
-- Prefer interfaces over type aliases for object shapes
-'
-```
-
-### Read a memory
-
-```bash
-npx mcporter call serena.read_memory memory_name=build/commands
-```
-
-### List memories
-
-```bash
-# List all
-npx mcporter call serena.list_memories
-
-# Filter by topic
-npx mcporter call serena.list_memories topic=build
-npx mcporter call serena.list_memories topic=global
-```
-
-### Edit a memory (partial update)
-
-```bash
-# Literal replacement
-npx mcporter call serena.edit_memory \
-  memory_name=build/commands \
-  mode=literal \
-  needle='npm test' \
-  repl='npm run test:ci'
-
-# Regex replacement (DOTALL + MULTILINE enabled)
-npx mcporter call serena.edit_memory \
-  memory_name=build/commands \
-  mode=regex \
-  needle='- Build:.*' \
-  repl='- Build: `pnpm build`'
-
-# Replace multiple occurrences
-npx mcporter call serena.edit_memory \
-  memory_name=build/commands \
-  mode=literal \
-  needle='npm' \
-  repl='pnpm' \
-  allow_multiple_occurrences=true
-```
-
-### Rename / move a memory
-
-```bash
-npx mcporter call serena.rename_memory old_name=commands new_name=build/commands
-```
-
-### Delete a memory
-
-```bash
-# Only delete when explicitly instructed by the user
-npx mcporter call serena.delete_memory memory_name=build/commands
+sr read_memory memory_name=build/commands
+sr list_memories topic=build
+sr edit_memory memory_name=build/commands mode=literal needle='npm test' repl='npm run test:ci'
+sr rename_memory old_name=commands new_name=build/commands
+sr delete_memory memory_name=build/commands
 ```
 
 ## Parameter reference
@@ -132,7 +68,7 @@ npx mcporter call serena.delete_memory memory_name=build/commands
 
 ## Notes
 
-- Project-scoped memories require an active project (`serena-project` skill). Global memories (`global/` prefix) do not.
+- Project-scoped memories require an active project. Global memories (`global/` prefix) do not.
 - Check `list_memories` before writing to avoid overwriting important existing memories.
 - Memory tools are **disabled in `no-memories` mode**. If memory tools are missing from `get_current_config`, check whether Serena was started with `no-memories` mode active.
 - `edit_memory` regex mode uses both DOTALL and MULTILINE flags — `.` matches newlines, `^`/`$` match line boundaries.

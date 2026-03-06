@@ -24,44 +24,31 @@ metadata:
 
 ```bash
 # 1. Activate the target project (by path or registered name)
-npx mcporter call serena.activate_project project=/path/to/my-project
+sr activate_project project=/path/to/my-project
 
 # 2. Check onboarding status (always call after activation)
-npx mcporter call serena.check_onboarding_performed
+sr check_onboarding_performed
 
 # 3. Run onboarding if not yet performed (once per conversation)
-npx mcporter call serena.onboarding
+sr onboarding
 
 # 4. Read relevant memories (see serena-memory skill)
-npx mcporter call serena.list_memories
-npx mcporter call serena.read_memory memory_name=architecture
+sr list_memories
+sr read_memory memory_name=architecture
 
 # 5. Set modes for the task at hand
-npx mcporter call serena.switch_modes modes='["editing", "interactive"]'
+sr switch_modes modes='["editing", "interactive"]'
 ```
 
 After onboarding completes the first time, start a **new conversation** — the context window is likely full after the initial read. Then prime with project knowledge from memories.
 
-## How to call with mcporter
+## Quick reference
 
 ```bash
-# Activate by registered name (after first activation by path)
-npx mcporter call serena.activate_project project=my-app
-
-# Check config at any time
-npx mcporter call serena.get_current_config
-
-# Switch to planning mode (read-only analysis)
-npx mcporter call serena.switch_modes modes='["planning"]'
-
-# Combine modes
-npx mcporter call serena.switch_modes modes='["editing", "interactive"]'
-
-# One-shot mode (complete task autonomously, then stop)
-npx mcporter call serena.switch_modes modes='["planning", "one-shot"]'
-
-# Prepare for new conversation (only on explicit user request)
-npx mcporter call serena.prepare_for_new_conversation
+sr activate_project project=my-app
+sr get_current_config
+sr switch_modes modes='["editing", "interactive"]'
+sr prepare_for_new_conversation
 ```
 
 ## Available modes
@@ -97,24 +84,6 @@ Switching modes immediately changes which tools are available. Tools that requir
 | `rename_symbol`        | yes                |
 
 All read/search/navigation tools (`read_file`, `list_dir`, `find_file`, `search_for_pattern`, `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, etc.) remain available in `planning` mode.
-
-## mcporter state persistence
-
-All Serena tools require an **active project**. Without the mcporter keep-alive daemon, each `npx mcporter call` spawns a fresh process and state is lost.
-
-**With the daemon (recommended)**: activate once and state persists across all calls.
-
-```bash
-# Start daemon (config must have "lifecycle": "keep-alive" for serena)
-npx mcporter daemon start
-
-# Activate once — persists for entire session
-npx mcporter call serena.activate_project project=my-project
-```
-
-**Without the daemon**: each call is isolated. Multi-step workflows that depend on activation state will fail. Use the daemon for any real work.
-
-First-time project activation by path auto-registers the project in `~/.serena/serena_config.yml`; subsequent activations can use the registered name.
 
 > **Default:** Serena activates `interactive` + `editing` by default. When you pass `--mode` flags at startup, **only** the explicitly listed modes are active — include `interactive` and `editing` if you want them to stay on.
 >
@@ -153,4 +122,4 @@ Fall back to generic agent tools only for operations Serena does not cover (e.g.
 
 - Always activate a project before using file, symbol, or search tools — they need an active project context.
 - `onboarding` requires an active project and should be called **at most once per conversation**.
-- Run `npx mcporter list serena` to verify your Serena MCP server is configured and reachable.
+- Run `npx mcporter list serena` to verify Serena is reachable (see `serena-setup` skill).

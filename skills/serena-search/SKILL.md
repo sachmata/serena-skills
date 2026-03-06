@@ -41,45 +41,11 @@ Combine these parameters to target searches precisely:
 
 Globs match against relative file paths from the project root. Supports `*`, `?`, `[seq]`, `**`, and brace expansion `{a,b,c}`.
 
-## How to call with mcporter
+## Quick reference
 
 ```bash
-# Basic search
-npx mcporter call serena.search_for_pattern substring_pattern='TODO'
-
-# With context lines
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='throw new Error' \
-  context_lines_before=2 \
-  context_lines_after=2
-
-# Restrict to a directory
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='fetchUser' \
-  relative_path=src/api
-
-# Filter by file glob
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='import.*from' \
-  paths_include_glob='*.ts'
-
-# Exclude generated files
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='apiKey' \
-  paths_exclude_glob='**/*.generated.ts'
-
-# Only code files (those with LSP symbols)
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='async function' \
-  restrict_search_to_code_files=true
-
-# Multi-line pattern (DOTALL means . matches newlines)
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='function.*?\{.*?console\.log.*?\}'
-
-# Line-anchored search with inline (?m) flag
-npx mcporter call serena.search_for_pattern \
-  substring_pattern='(?m)^import.*lodash'
+sr search_for_pattern substring_pattern='TODO' relative_path=src context_lines_before=2 context_lines_after=2
+sr search_for_pattern substring_pattern='import.*from' paths_include_glob='*.ts' restrict_search_to_code_files=true
 ```
 
 ## Parameter reference
@@ -97,7 +63,6 @@ npx mcporter call serena.search_for_pattern \
 
 ## Notes
 
-- Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
 - Always use `search_for_pattern` instead of the agent's built-in grep or text search — it is project-scoped and respects `.gitignore`.
 - Returns a mapping of file paths to lists of matched consecutive lines.
 - If output is too large, narrow the search with `relative_path`, globs, or `restrict_search_to_code_files` rather than increasing `max_answer_chars`.

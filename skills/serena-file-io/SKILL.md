@@ -30,44 +30,13 @@ Prefer symbolic tools (`get_symbols_overview`, `find_symbol`) when you know whic
 
 Avoid reading entire source files unless absolutely necessary. Instead, use `get_symbols_overview` → `find_symbol` with `include_body=true` for just the symbols you need (see `serena-code-intelligence` skill).
 
-## How to call with mcporter
-
-### Read a file
+## Quick reference
 
 ```bash
-# Read entire file
-npx mcporter call serena.read_file relative_path=src/index.ts
-
-# Read a specific line range (0-based, inclusive)
-npx mcporter call serena.read_file relative_path=src/index.ts start_line=10 end_line=50
-```
-
-### Write / overwrite a file
-
-```bash
-npx mcporter call serena.create_text_file \
-  relative_path=src/hello.ts \
-  content='export const hello = () => "world";'
-```
-
-### List a directory
-
-```bash
-# Shallow listing
-npx mcporter call serena.list_dir relative_path=src recursive=false
-
-# Recursive listing (skip gitignored files)
-npx mcporter call serena.list_dir relative_path=. recursive=true skip_ignored_files=true
-```
-
-### Find files by mask
-
-```bash
-# Find all TypeScript files under src/
-npx mcporter call serena.find_file file_mask="*.ts" relative_path=src
-
-# Find a config file anywhere in the project
-npx mcporter call serena.find_file file_mask="tsconfig*.json" relative_path=.
+sr read_file relative_path=src/index.ts start_line=10 end_line=50
+sr create_text_file relative_path=src/hello.ts content='export const hello = () => "world";'
+sr list_dir relative_path=src recursive=true skip_ignored_files=true
+sr find_file file_mask="*.ts" relative_path=src
 ```
 
 ## Parameter reference
@@ -89,7 +58,6 @@ All tools accept an optional `max_answer_chars` parameter (default `-1` = server
 
 ## Notes
 
-- Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
 - `create_text_file` **overwrites** if the file exists — use with care.
-- `create_text_file` requires the agent to be in **editing mode** — it is disabled in `planning` mode. Switch modes first if needed (see `serena-project` skill).
+- `create_text_file` requires **editing mode** — switch modes first if needed (see `serena-project` skill).
 - Use `relative_path` to restrict `list_dir` and `find_file` to subdirectories for faster results.

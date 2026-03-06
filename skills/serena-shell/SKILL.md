@@ -18,32 +18,10 @@ metadata:
 
 If the project has a memory with suggested commands (e.g. `build/commands`), **read it first** (see `serena-memory` skill) to use the correct project-specific invocations.
 
-## How to call with mcporter
+## Quick reference
 
 ```bash
-# Run tests
-npx mcporter call serena.execute_shell_command command='npm test'
-
-# Build
-npx mcporter call serena.execute_shell_command command='cargo build'
-
-# Run in a specific subdirectory
-npx mcporter call serena.execute_shell_command command='npm install' cwd=packages/frontend
-
-# Suppress stderr (useful when stderr is noisy but irrelevant)
-npx mcporter call serena.execute_shell_command command='git log --oneline -10' capture_stderr=false
-
-# Type-check
-npx mcporter call serena.execute_shell_command command='tsc --noEmit'
-
-# Lint
-npx mcporter call serena.execute_shell_command command='eslint src/'
-
-# Git status
-npx mcporter call serena.execute_shell_command command='git status'
-
-# Custom script
-npx mcporter call serena.execute_shell_command command='./scripts/generate.sh'
+sr execute_shell_command command='npm test' cwd=packages/frontend capture_stderr=false
 ```
 
 ## Parameter reference
@@ -63,6 +41,5 @@ npx mcporter call serena.execute_shell_command command='./scripts/generate.sh'
 
 ## Notes
 
-- Requires an active project (`serena-project` skill) and the mcporter keep-alive daemon.
 - The command runs in the project root by default; use `cwd` to target a subdirectory.
 - Returns a JSON object with `stdout` and optionally `stderr`.

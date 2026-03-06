@@ -16,26 +16,45 @@ OpenCode agent skills for [Serena MCP server](https://github.com/oraios/serena) 
 
 ---
 
-## 1. Install and register Serena MCP server
+## 1. Prerequisites
 
-### Install Serena
-
-Serena requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
+Serena requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). All skills call Serena through [mcporter](https://github.com/steipete/mcporter) via the `sr` wrapper script included in this repo.
 
 ```bash
 # Install uv if you don't have it
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Serena is run directly via `uvx` — no cloning required:
+Node.js (18+) is required for mcporter (`npx`).
+
+## 2. The `sr` wrapper — zero-config setup
+
+The `sr` script in the repo root is a thin shell wrapper that **lazily handles all mcporter setup** on first use:
+
+1. **Registers Serena** in `~/.mcporter/mcporter.json` if not already present (creates the file or merges into an existing config).
+2. **Starts the mcporter keep-alive daemon** if no daemon socket is detected.
+3. **Forwards the call** to `npx mcporter call serena.<tool> [args…]`.
+
+Add the repo to your `PATH` so `sr` is available everywhere:
 
 ```bash
-uvx --from git+https://github.com/oraios/serena serena start-mcp-server
+export PATH="$PATH:$HOME/serena-skills"   # add to ~/.bashrc or ~/.zshrc
 ```
 
-### Register Serena with mcporter
+Then just use it — no manual configuration needed:
 
-[mcporter](https://github.com/steipete/mcporter) is a CLI toolkit for calling MCP servers. It auto-discovers servers configured in Cursor, Claude Desktop, OpenCode, and VS Code, but you can also register Serena explicitly.
+```bash
+sr activate_project project=/path/to/my-project
+```
+
+On the first invocation `sr` will register Serena and start the daemon automatically. Subsequent calls skip the checks (two lightweight filesystem tests, no extra processes).
+
+### Manual setup (optional)
+
+If you prefer to manage mcporter configuration yourself, or need to troubleshoot:
+
+<details>
+<summary>Manual mcporter registration</summary>
 
 Edit `~/.mcporter/mcporter.json` directly (create the file if it doesn't exist):
 
@@ -57,16 +76,16 @@ Edit `~/.mcporter/mcporter.json` directly (create the file if it doesn't exist):
 
 ```bash
 npx mcporter daemon start
-
-# Confirm it is running
 npx mcporter daemon status
 ```
 
-The daemon keeps the Serena process alive between calls so that project activation and other state persists across separate `npx mcporter call` invocations. Stop it when you're done for the day:
+The daemon keeps the Serena process alive between calls so that project activation state persists. Stop it when you're done for the day:
 
 ```bash
 npx mcporter daemon stop
 ```
+
+</details>
 
 **Verify connectivity:**
 
@@ -94,7 +113,7 @@ If you use OpenCode and want Serena available as a native MCP server (without ro
 
 ---
 
-## 2. Install the skills
+## 3. Install the skills
 
 Skills are Markdown files that OpenCode loads on-demand to give the agent reusable instructions. They live under a `skills/` subdirectory inside any of these locations (searched in order):
 
@@ -208,7 +227,7 @@ Or ask the agent: `list all available skills`. You should see all seven `serena-
 
 ---
 
-## 3. Use the skills
+## 4. Use the skills
 
 Skills are loaded on-demand: OpenCode exposes each skill's name and description to the agent, and the agent fetches the full `SKILL.md` automatically when it determines a skill is relevant to the current task. No user intervention is needed.
 
@@ -269,6 +288,7 @@ serena-skills/
 ├── README.md                          ← you are here
 ├── INSTALL_PROMPT.md                  ← paste into an agent to auto-install skills
 ├── SKILL_AUTHORING.md                 ← reference for writing and maintaining skills
+├── sr                                 ← wrapper script (lazy-registers Serena + starts daemon)
 ├── LICENSE
 └── skills/
     ├── serena-project/
