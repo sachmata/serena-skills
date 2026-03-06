@@ -22,33 +22,33 @@ metadata:
 
 ## Session startup sequence
 
-```bash
+```
 # 1. Activate the target project (by path or registered name)
-sr activate_project project=/path/to/my-project
+sr(tool="activate_project", args="project=/path/to/my-project")
 
 # 2. Check onboarding status (always call after activation)
-sr check_onboarding_performed
+sr(tool="check_onboarding_performed")
 
 # 3. Run onboarding if not yet performed (once per conversation)
-sr onboarding
+sr(tool="onboarding")
 
 # 4. Read relevant memories (see serena-memory skill)
-sr list_memories
-sr read_memory memory_name=architecture
+sr(tool="list_memories")
+sr(tool="read_memory", args="memory_name=architecture")
 
 # 5. Set modes for the task at hand
-sr switch_modes modes='["editing", "interactive"]'
+sr(tool="switch_modes", args="modes='[\"editing\", \"interactive\"]'")
 ```
 
 After onboarding completes the first time, start a **new conversation** — the context window is likely full after the initial read. Then prime with project knowledge from memories.
 
 ## Quick reference
 
-```bash
-sr activate_project project=my-app
-sr get_current_config
-sr switch_modes modes='["editing", "interactive"]'
-sr prepare_for_new_conversation
+```
+sr(tool="activate_project", args="project=my-app")
+sr(tool="get_current_config")
+sr(tool="switch_modes", args="modes='[\"editing\", \"interactive\"]'")
+sr(tool="prepare_for_new_conversation")
 ```
 
 ## Available modes

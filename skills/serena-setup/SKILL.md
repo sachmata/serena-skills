@@ -1,7 +1,6 @@
-````skill
 ---
 name: serena-setup
-description: Zero-config session setup for Serena MCP tools. The `sr` wrapper lazily registers Serena with mcporter and starts the keep-alive daemon — just add it to PATH.
+description: Zero-config session setup for Serena MCP tools. The `sr` OpenCode custom tool lazily registers Serena with mcporter and starts the keep-alive daemon — just install the tool and start calling it.
 license: MIT
 compatibility: opencode
 metadata:
@@ -11,28 +10,37 @@ metadata:
 
 ## Session bootstrap
 
-Add the repo to PATH once at the start of every session (or permanently in your shell rc):
-
-```bash
-export PATH="$PATH:$HOME/serena-skills"
-```
-
-That's it. The first `sr` call automatically:
+The `sr` custom tool handles all setup automatically. On first call it:
 
 1. Registers Serena in `~/.mcporter/mcporter.json` (creates or merges).
 2. Starts the mcporter keep-alive daemon if not already running.
 3. Forwards the tool call.
 
-## The `sr` shorthand
+No manual configuration or PATH setup is needed — just have the `sr` custom tool installed in `~/.config/opencode/tools/sr.ts` (or `.opencode/tools/sr.ts` for project-local).
 
-All Serena skills use `sr <tool> [key=value …]` instead of `npx mcporter call serena.<tool>`. The script lives at the repo root and handles lazy init:
+## The `sr` custom tool
+
+`sr` is an [OpenCode custom tool](https://opencode.ai/docs/custom-tools/) with two parameters:
+
+| Parameter | Type   | Description                                                             |
+| --------- | ------ | ----------------------------------------------------------------------- |
+| `tool`    | string | Serena tool name (e.g. `activate_project`, `find_symbol`, `read_file`) |
+| `args`    | string | Space-separated `key=value` arguments for the tool                     |
+
+All Serena skills use `sr` to call Serena tools. Example:
+
+```
+sr(tool="activate_project", args="project=/path/to/my-project")
+sr(tool="find_symbol", args="name_path_pattern=MyClass relative_path=src/server.ts include_body=true")
+sr(tool="get_current_config")
+```
+
+### What it does under the hood
 
 - **No config?** Creates `~/.mcporter/mcporter.json` with the Serena entry.
-- **Config exists but missing Serena?** Merges it in (via `node`).
-- **No daemon socket?** Runs `npx mcporter daemon start`.
+- **Config exists but missing Serena?** Merges it in.
+- **No daemon socket?** Starts `npx mcporter daemon start`.
 - **Everything ready?** Two lightweight filesystem checks, zero extra processes.
-
-If `sr` is not on PATH, use the full form: `npx mcporter call serena.<tool> [key=value …]`.
 
 ## mcporter keep-alive daemon
 
@@ -50,9 +58,9 @@ Without the daemon each call spawns a fresh Serena process — activation state 
 
 All Serena file, symbol, search, editing, memory (project-scoped), and shell tools require an **active project**. Activate one with:
 
-```bash
-sr activate_project project=/path/to/my-project   # first time (registers in ~/.serena/serena_config.yml)
-sr activate_project project=my-project             # subsequent times (by registered name)
+```
+sr(tool="activate_project", args="project=/path/to/my-project")
+sr(tool="activate_project", args="project=my-project")
 ```
 
 See the `serena-project` skill for the full session startup sequence.
@@ -62,5 +70,3 @@ See the `serena-project` skill for the full session startup sequence.
 ```bash
 npx mcporter list serena 2>&1 | grep -c 'function'   # should print ~25
 ```
-
-````

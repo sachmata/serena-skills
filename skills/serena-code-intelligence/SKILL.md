@@ -42,10 +42,10 @@ With `substring_matching=true`, `Foo/get` matches `Foo/getValue`, `Foo/getData`,
 
 ## Quick reference
 
-```bash
-sr get_symbols_overview relative_path=src/server.ts depth=1
-sr find_symbol name_path_pattern=MyClass/connect relative_path=src/server.ts include_body=true
-sr find_referencing_symbols name_path=connect relative_path=src/server.ts
+```
+sr(tool="get_symbols_overview", args="relative_path=src/server.ts depth=1")
+sr(tool="find_symbol", args="name_path_pattern=MyClass/connect relative_path=src/server.ts include_body=true")
+sr(tool="find_referencing_symbols", args="name_path=connect relative_path=src/server.ts")
 ```
 
 **Depth behavior:** `depth=0` = top-level only. `depth=1` = immediate children (methods, properties). Higher values expand the tree further; use sparingly.

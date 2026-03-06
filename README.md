@@ -18,7 +18,7 @@ OpenCode agent skills for [Serena MCP server](https://github.com/oraios/serena) 
 
 ## 1. Prerequisites
 
-Serena requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). All skills call Serena through [mcporter](https://github.com/steipete/mcporter) via the `sr` wrapper script included in this repo.
+Serena requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). All skills call Serena through [mcporter](https://github.com/steipete/mcporter) via the `sr` custom tool included in this repo.
 
 ```bash
 # Install uv if you don't have it
@@ -27,24 +27,18 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Node.js (18+) is required for mcporter (`npx`).
 
-## 2. The `sr` wrapper — zero-config setup
+## 2. The `sr` custom tool — zero-config setup
 
-The `sr` script in the repo root is a thin shell wrapper that **lazily handles all mcporter setup** on first use:
+The `sr` tool in `tools/sr.ts` is an [OpenCode custom tool](https://opencode.ai/docs/custom-tools/) that **lazily handles all mcporter setup** on first use:
 
 1. **Registers Serena** in `~/.mcporter/mcporter.json` if not already present (creates the file or merges into an existing config).
 2. **Starts the mcporter keep-alive daemon** if no daemon socket is detected.
 3. **Forwards the call** to `npx mcporter call serena.<tool> [args…]`.
 
-Add the repo to your `PATH` so `sr` is available everywhere:
+The agent calls it like any other OpenCode tool — with a `tool` parameter (the Serena tool name) and an `args` parameter (space-separated `key=value` pairs):
 
-```bash
-export PATH="$PATH:$HOME/serena-skills"   # add to ~/.bashrc or ~/.zshrc
 ```
-
-Then just use it — no manual configuration needed:
-
-```bash
-sr activate_project project=/path/to/my-project
+sr(tool="activate_project", args="project=/path/to/my-project")
 ```
 
 On the first invocation `sr` will register Serena and start the daemon automatically. Subsequent calls skip the checks (two lightweight filesystem tests, no extra processes).
@@ -113,7 +107,34 @@ If you use OpenCode and want Serena available as a native MCP server (without ro
 
 ---
 
-## 3. Install the skills
+## 3. Install the `sr` custom tool
+
+The `sr` tool definition lives at `tools/sr.ts` in this repo. It must be placed in one of the [OpenCode custom tool directories](https://opencode.ai/docs/custom-tools/):
+
+| Scope | Path |
+|-------|------|
+| Global (all projects) | `~/.config/opencode/tools/sr.ts` |
+| Project-local | `.opencode/tools/sr.ts` |
+
+### Install globally (recommended)
+
+```bash
+mkdir -p ~/.config/opencode/tools
+cp tools/sr.ts ~/.config/opencode/tools/sr.ts
+```
+
+> **Note:** Do not use a symlink for `sr.ts`. Bun (which OpenCode uses to run custom tools) resolves dependencies relative to the real file path, so a symlink will cause module-not-found errors.
+
+### Install for a single project
+
+```bash
+mkdir -p /path/to/your-project/.opencode/tools
+cp tools/sr.ts /path/to/your-project/.opencode/tools/sr.ts
+```
+
+---
+
+## 4. Install the skills
 
 Skills are Markdown files that OpenCode loads on-demand to give the agent reusable instructions. They live under a `skills/` subdirectory inside any of these locations (searched in order):
 
@@ -227,7 +248,7 @@ Or ask the agent: `list all available skills`. You should see all seven `serena-
 
 ---
 
-## 4. Use the skills
+## 5. Use the skills
 
 Skills are loaded on-demand: OpenCode exposes each skill's name and description to the agent, and the agent fetches the full `SKILL.md` automatically when it determines a skill is relevant to the current task. No user intervention is needed.
 
@@ -277,7 +298,7 @@ The remaining skills cover the agent's full toolkit and are loaded autonomously 
 
 ### Quick-start install prompt
 
-See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that you can give to any agent with shell access to clone this repo and install all skills automatically.
+See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that you can give to any agent with shell access to clone this repo and install all skills and the `sr` custom tool automatically.
 
 ---
 
@@ -286,10 +307,11 @@ See [`INSTALL_PROMPT.md`](INSTALL_PROMPT.md) for a copy-pasteable prompt that yo
 ```
 serena-skills/
 ├── README.md                          ← you are here
-├── INSTALL_PROMPT.md                  ← paste into an agent to auto-install skills
+├── INSTALL_PROMPT.md                  ← paste into an agent to auto-install skills + tool
 ├── SKILL_AUTHORING.md                 ← reference for writing and maintaining skills
-├── sr                                 ← wrapper script (lazy-registers Serena + starts daemon)
 ├── LICENSE
+├── tools/
+│   └── sr.ts                          ← OpenCode custom tool (lazy-registers Serena + starts daemon)
 └── skills/
     ├── serena-project/
     │   └── SKILL.md                   ← project lifecycle & modes
@@ -311,7 +333,7 @@ serena-skills/
 
 ## Compatibility
 
-- **OpenCode** — native `skill` tool, all paths above
+- **OpenCode** — native `skill` tool + `sr` custom tool, all paths above
 - **Claude Code / Claude Desktop** — place under `.claude/skills/` or `~/.claude/skills/`
 - **Agents-compatible hosts** — place under `.agents/skills/` or `~/.agents/skills/`
 
@@ -329,7 +351,7 @@ Key quote:
 
 > *"Skills are really just short summaries of which skills exist and in which file the agent can learn more about them. […] Crucially, skills do not actually load a tool definition into the context. The tools remain the same: bash and the other tools the agent already has. All it learns from the skill are tips and tricks for how to use these tools more effectively."*
 
-That is exactly what this repo does for Serena: each skill is a lightweight manual that the agent loads on demand via OpenCode's native `skill` tool, while Serena's actual MCP tools are called through mcporter as ordinary CLI invocations.
+That is exactly what this repo does for Serena: each skill is a lightweight manual that the agent loads on demand via OpenCode's native `skill` tool, while Serena's actual MCP tools are called through mcporter via the `sr` custom tool.
 
 The known limitation Armin identifies — that MCP servers change their APIs freely, which can silently invalidate skill files — applies here too. If Serena's tool signatures change, the skills in this repo will need updating. PRs welcome.
 

@@ -1,3 +1,4 @@
+````markdown
 # Install Prompt
 
 Paste the block below into an agent (OpenCode, Claude Code, or any agent with shell access) to install serena-skills automatically.
@@ -17,14 +18,16 @@ Please set up Serena and serena-skills by running the following steps in a shell
 3. Clone the serena-skills repo (skip if already present):
    git clone https://github.com/sachmata/serena-skills ~/serena-skills
 
-4. Add the sr wrapper to PATH (add to your shell rc file for persistence):
-   export PATH="$PATH:$HOME/serena-skills"
+4. Install the sr custom tool globally for OpenCode:
+   mkdir -p ~/.config/opencode/tools
+   cp ~/serena-skills/tools/sr.ts ~/.config/opencode/tools/sr.ts
+   (Do NOT use a symlink — Bun cannot resolve dependencies through symlinks.)
 
-5. Copy every skill into the global OpenCode skills directory:
+5. Symlink every skill into the global OpenCode skills directory:
    for skill_dir in ~/serena-skills/skills/*/; do
      skill_name=$(basename "$skill_dir")
      mkdir -p ~/.config/opencode/skills/"$skill_name"
-     cp "$skill_dir/SKILL.md" ~/.config/opencode/skills/"$skill_name"/SKILL.md
+     ln -sf "$(realpath "$skill_dir/SKILL.md")" ~/.config/opencode/skills/"$skill_name"/SKILL.md
    done
 
 6. Verify skills are installed:
@@ -40,12 +43,19 @@ Please set up Serena and serena-skills by running the following steps in a shell
      serena-setup
      serena-shell
 
-7. Verify Serena is reachable (sr auto-registers Serena with mcporter
-   and starts the keep-alive daemon on first use):
-   sr initial_instructions
+7. Verify the sr custom tool is installed:
+   ls ~/.config/opencode/tools/sr.ts
 
-   This should print Serena's initial instructions text. If it hangs,
-   check that uv/uvx and node/npx are on your PATH.
+8. Verify Serena is reachable (the sr custom tool auto-registers
+   Serena with mcporter and starts the keep-alive daemon on first use).
+   Test with a manual mcporter call:
+   npx mcporter daemon start
+   npx mcporter list serena 2>&1 | grep -c 'function'
+
+   This should print ~25. If it hangs, check that uv/uvx and
+   node/npx are on your PATH.
 
 Please run these commands now and confirm each step succeeded.
 ```
+
+````

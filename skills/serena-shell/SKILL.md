@@ -20,8 +20,8 @@ If the project has a memory with suggested commands (e.g. `build/commands`), **r
 
 ## Quick reference
 
-```bash
-sr execute_shell_command command='npm test' cwd=packages/frontend capture_stderr=false
+```
+sr(tool="execute_shell_command", args="command='npm test' cwd=packages/frontend capture_stderr=false")
 ```
 
 ## Parameter reference

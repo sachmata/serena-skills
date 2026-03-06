@@ -36,16 +36,13 @@ Onboarding automatically creates initial memories on first project activation. O
 
 ## Quick reference
 
-```bash
-sr write_memory memory_name=build/commands content='## Build Commands
-- Build: `npm run build`
-- Test: `npm test`
-'
-sr read_memory memory_name=build/commands
-sr list_memories topic=build
-sr edit_memory memory_name=build/commands mode=literal needle='npm test' repl='npm run test:ci'
-sr rename_memory old_name=commands new_name=build/commands
-sr delete_memory memory_name=build/commands
+```
+sr(tool="write_memory", args="memory_name=build/commands content='## Build Commands\n- Build: `npm run build`\n- Test: `npm test`\n'")
+sr(tool="read_memory", args="memory_name=build/commands")
+sr(tool="list_memories", args="topic=build")
+sr(tool="edit_memory", args="memory_name=build/commands mode=literal needle='npm test' repl='npm run test:ci'")
+sr(tool="rename_memory", args="old_name=commands new_name=build/commands")
+sr(tool="delete_memory", args="memory_name=build/commands")
 ```
 
 ## Parameter reference

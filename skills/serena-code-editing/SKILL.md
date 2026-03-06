@@ -45,13 +45,13 @@ This matches everything between the delimiters without specifying the full origi
 
 ## Quick reference
 
-```bash
-sr replace_content relative_path=src/config.ts mode=regex needle='const PORT.*?;' repl='const PORT = 8080;'
-sr replace_content relative_path=src/utils.ts mode=regex needle='console\.log' repl='logger.info' allow_multiple_occurrences=true
-sr replace_symbol_body relative_path=src/server.ts name_path=MyClass/connect body='connect(host: string): Promise<void> { return this.pool.connect(host); }'
-sr insert_after_symbol relative_path=src/server.ts name_path=MyClass/connect body='disconnect(): void { this.pool.close(); }'
-sr insert_before_symbol relative_path=src/server.ts name_path=MyClass body='import { Pool } from "pg";'
-sr rename_symbol relative_path=src/server.ts name_path=MyClass/connect new_name=connectToDatabase
+```
+sr(tool="replace_content", args="relative_path=src/config.ts mode=regex needle='const PORT.*?;' repl='const PORT = 8080;'")
+sr(tool="replace_content", args="relative_path=src/utils.ts mode=regex needle='console\.log' repl='logger.info' allow_multiple_occurrences=true")
+sr(tool="replace_symbol_body", args="relative_path=src/server.ts name_path=MyClass/connect body='connect(host: string): Promise<void> { return this.pool.connect(host); }'")
+sr(tool="insert_after_symbol", args="relative_path=src/server.ts name_path=MyClass/connect body='disconnect(): void { this.pool.close(); }'")
+sr(tool="insert_before_symbol", args="relative_path=src/server.ts name_path=MyClass body='import { Pool } from \"pg\";'")
+sr(tool="rename_symbol", args="relative_path=src/server.ts name_path=MyClass/connect new_name=connectToDatabase")
 ```
 
 **Backreferences** in regex mode use `$!1`, `$!2` syntax (not `\1`, `\2`).
