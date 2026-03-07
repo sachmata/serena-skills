@@ -25,13 +25,13 @@ No manual configuration or PATH setup is needed — just have the `sr` custom to
 | Parameter | Type   | Description                                                             |
 | --------- | ------ | ----------------------------------------------------------------------- |
 | `tool`    | string | Serena tool name (e.g. `activate_project`, `find_symbol`, `read_file`) |
-| `args`    | string | Space-separated `key=value` arguments for the tool                     |
+| `args`    | string | JSON object of arguments for the tool (e.g. `{"relative_path": "src/index.ts", "include_body": false}`). Booleans and integers must not be quoted. Omit or pass `{}` when the tool takes no arguments. |
 
 All Serena skills use `sr` to call Serena tools. Example:
 
 ```
-sr(tool="activate_project", args="project=/path/to/my-project")
-sr(tool="find_symbol", args="name_path_pattern=MyClass relative_path=src/server.ts include_body=true")
+sr(tool="activate_project", args='{"project": "/path/to/my-project"}')
+sr(tool="find_symbol", args='{"name_path_pattern": "MyClass", "relative_path": "src/server.ts", "include_body": true}')
 sr(tool="get_current_config")
 ```
 
@@ -59,8 +59,8 @@ Without the daemon each call spawns a fresh Serena process — activation state 
 All Serena file, symbol, search, editing, memory (project-scoped), and shell tools require an **active project**. Activate one with:
 
 ```
-sr(tool="activate_project", args="project=/path/to/my-project")
-sr(tool="activate_project", args="project=my-project")
+sr(tool="activate_project", args='{"project": "/path/to/my-project"}')
+sr(tool="activate_project", args='{"project": "my-project"}')
 ```
 
 See the `serena-project` skill for the full session startup sequence.

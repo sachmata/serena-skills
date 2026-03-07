@@ -21,7 +21,7 @@ If the project has a memory with suggested commands (e.g. `build/commands`), **r
 ## Quick reference
 
 ```
-sr(tool="execute_shell_command", args="command='npm test' cwd=packages/frontend capture_stderr=false")
+sr(tool="execute_shell_command", args='{"command": "npm test", "cwd": "packages/frontend", "capture_stderr": false}')
 ```
 
 ## Parameter reference

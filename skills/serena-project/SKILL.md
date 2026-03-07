@@ -24,7 +24,7 @@ metadata:
 
 ```
 # 1. Activate the target project (by path or registered name)
-sr(tool="activate_project", args="project=/path/to/my-project")
+sr(tool="activate_project", args='{"project": "/path/to/my-project"}')
 
 # 2. Check onboarding status (always call after activation)
 sr(tool="check_onboarding_performed")
@@ -34,10 +34,10 @@ sr(tool="onboarding")
 
 # 4. Read relevant memories (see serena-memory skill)
 sr(tool="list_memories")
-sr(tool="read_memory", args="memory_name=architecture")
+sr(tool="read_memory", args='{"memory_name": "architecture"}')
 
 # 5. Set modes for the task at hand
-sr(tool="switch_modes", args="modes='[\"editing\", \"interactive\"]'")
+sr(tool="switch_modes", args='{"modes": ["editing", "interactive"]}')
 ```
 
 After onboarding completes the first time, start a **new conversation** — the context window is likely full after the initial read. Then prime with project knowledge from memories.
@@ -45,9 +45,9 @@ After onboarding completes the first time, start a **new conversation** — the 
 ## Quick reference
 
 ```
-sr(tool="activate_project", args="project=my-app")
+sr(tool="activate_project", args='{"project": "my-app"}')
 sr(tool="get_current_config")
-sr(tool="switch_modes", args="modes='[\"editing\", \"interactive\"]'")
+sr(tool="switch_modes", args='{"modes": ["editing", "interactive"]}')
 sr(tool="prepare_for_new_conversation")
 ```
 

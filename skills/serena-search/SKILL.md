@@ -44,8 +44,8 @@ Globs match against relative file paths from the project root. Supports `*`, `?`
 ## Quick reference
 
 ```
-sr(tool="search_for_pattern", args="substring_pattern='TODO' relative_path=src context_lines_before=2 context_lines_after=2")
-sr(tool="search_for_pattern", args="substring_pattern='import.*from' paths_include_glob='*.ts' restrict_search_to_code_files=true")
+sr(tool="search_for_pattern", args='{"substring_pattern": "TODO", "relative_path": "src", "context_lines_before": 2, "context_lines_after": 2}')
+sr(tool="search_for_pattern", args='{"substring_pattern": "import.*from", "paths_include_glob": "*.ts", "restrict_search_to_code_files": true}')
 ```
 
 ## Parameter reference

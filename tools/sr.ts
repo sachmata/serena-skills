@@ -14,9 +14,9 @@ export default tool({
     args: tool.schema
       .string()
       .describe(
-        "Space-separated key=value arguments for the tool (e.g. 'project=/path/to/project' or 'relative_path=src/index.ts include_body=true')"
+        "JSON object of arguments for the tool, e.g. '{\"relative_path\": \"src/index.ts\", \"include_body\": false, \"depth\": 2}'. Use proper JSON — booleans and integers must not be quoted. Pass '{}' when the tool takes no arguments."
       )
-      .default(""),
+      .default("{}"),
   },
   async execute(args) {
     const home = process.env.HOME || process.env.USERPROFILE || ""
@@ -61,12 +61,21 @@ export default tool({
     }
 
     // --- 3. Forward the call ---
-    const cmd = args.args
-      ? `bunx mcporter call serena.${args.tool} ${args.args}`
-      : `bunx mcporter call serena.${args.tool}`
+    let parsedArgs: Record<string, unknown>
+    try {
+      parsedArgs = JSON.parse(args.args || "{}")
+      if (typeof parsedArgs !== "object" || Array.isArray(parsedArgs) || parsedArgs === null) {
+        return `Error: 'args' must be a JSON object, got: ${args.args}`
+      }
+    } catch {
+      return `Error: 'args' is not valid JSON: ${args.args}`
+    }
+
+    const jsonPayload = JSON.stringify(parsedArgs)
+    const toolRef = `serena.${args.tool}`
 
     try {
-      const result = await Bun.$`sh -c ${cmd}`.text()
+      const result = await Bun.$`bunx mcporter call ${toolRef} --args ${jsonPayload}`.text()
       return result.trim()
     } catch (e: any) {
       const stderr = e.stderr?.toString?.() || ""

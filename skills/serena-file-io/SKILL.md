@@ -33,10 +33,10 @@ Avoid reading entire source files unless absolutely necessary. Instead, use `get
 ## Quick reference
 
 ```
-sr(tool="read_file", args="relative_path=src/index.ts start_line=10 end_line=50")
-sr(tool="create_text_file", args="relative_path=src/hello.ts content='export const hello = () => \"world\";'")
-sr(tool="list_dir", args="relative_path=src recursive=true skip_ignored_files=true")
-sr(tool="find_file", args="file_mask='*.ts' relative_path=src")
+sr(tool="read_file", args='{"relative_path": "src/index.ts", "start_line": 10, "end_line": 50}')
+sr(tool="create_text_file", args='{"relative_path": "src/hello.ts", "content": "export const hello = () => \\"world\\";"}')
+sr(tool="list_dir", args='{"relative_path": "src", "recursive": true, "skip_ignored_files": true}')
+sr(tool="find_file", args='{"file_mask": "*.ts", "relative_path": "src"}')
 ```
 
 ## Parameter reference
